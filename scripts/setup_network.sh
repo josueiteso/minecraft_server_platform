@@ -46,6 +46,8 @@ done
 authorize --group-id "$LAMBDA_SG_ID" --protocol tcp --port 443 --source-group "$LAMBDA_SG_ID" # este es el mismo puierto que usan los VPC endpoints
 
 # creacion de VPC endpoints
+
+# shellcheck disable=SC2086
 for SVC in ec2 rds secretsmanager ssm; do
   EXISTING=$(aws ec2 describe-vpc-endpoints --region "$REGION" \
     --filters "Name=vpc-id,Values=$VPC_ID" "Name=service-name,Values=com.amazonaws.${REGION}.${SVC}" \

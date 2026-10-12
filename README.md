@@ -15,7 +15,7 @@ cd minecraft_server_platform
 ```
 
 **2. Monta la infraestructura**
-  
+
 Otorga permisos de ejecucion a los scripts:
 ```bash
 chmod +x ./scripts/*.sh

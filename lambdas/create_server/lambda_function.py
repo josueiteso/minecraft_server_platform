@@ -133,6 +133,7 @@ systemctl daemon-reload
 systemctl enable --now minecraft
 """
 
+
 def lambda_handler(event, context):
     try:
         user_id = event.get("userId")
