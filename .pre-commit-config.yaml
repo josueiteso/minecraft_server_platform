@@ -15,19 +15,16 @@ repos:
       - id: trailing-whitespace
       - id: detect-aws-credentials
         args: [--allow-missing-credentials]
-
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.17.0
     hooks:
       - id: ruff-check
         args: [--fix]
       - id: ruff-format
-
   - repo: https://github.com/shellcheck-py/shellcheck-py
     rev: v0.11.0.1
     hooks:
       - id: shellcheck
-
   - repo: https://github.com/google/yamlfmt
     rev: v0.21.0
     hooks:
