@@ -7,6 +7,10 @@ set -e
 REGION="us-east-1"
 SG_NAME="minecraft-servers-sg"
 
+# el nombre del bucket incluye el ID de la cuenta para que sea unico en S3
+ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+BACKUP_BUCKET="minecraft-backups-${ACCOUNT_ID}"
+
 echo "Creando security group ${SG_NAME}..."
 
 # crea los security groups
@@ -21,6 +25,17 @@ echo "Security Group ID: ${SG_ID}"
 
 aws ec2 authorize-security-group-ingress --group-id "${SG_ID}" --protocol tcp --port 25565 --cidr 0.0.0.0/0 --region ${REGION} 2>/dev/null || true # puerto de minecraft
 aws ec2 authorize-security-group-ingress --group-id "${SG_ID}" --protocol tcp --port 22 --cidr 0.0.0.0/0 --region ${REGION} 2>/dev/null || true # puerto de ssh
+
+# crea el bucket de respaldos de mundos (si no existe)
+if aws s3api head-bucket --bucket "${BACKUP_BUCKET}" 2>/dev/null; then
+  echo "El bucket de respaldos ${BACKUP_BUCKET} ya existe."
+else
+  echo "Creando bucket de respaldos ${BACKUP_BUCKET}..."
+  aws s3api create-bucket --bucket "${BACKUP_BUCKET}" --region "${REGION}" > /dev/null
+  aws s3api put-public-access-block --bucket "${BACKUP_BUCKET}" \
+    --public-access-block-configuration BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=true,RestrictPublicBuckets=true
+  echo "Bucket de respaldos creado: ${BACKUP_BUCKET}"
+fi
 
 DB_INSTANCE_IDENTIFIER="minecraft-db-instance"
 
