@@ -15,7 +15,7 @@ ssm_client = boto3.client("ssm", region_name=REGION)
 cloudwatch_client = boto3.client("cloudwatch", region_name=REGION)
 
 DB_INSTANCE_ID = os.environ.get("DB_INSTANCE_ID", "minecraft-db-instance")
-BACKUP_BUCKET = os.environ.get("BACKUP_BUCKET", "minecraft-backups-CAMBIAR")
+BACKUP_BUCKET = os.environ.get("BACKUP_BUCKET")
 METRIC_NAMESPACE = "MinecraftPlatform"
 
 VALID_ACTIONS = {"start", "stop", "backup", "status"}
