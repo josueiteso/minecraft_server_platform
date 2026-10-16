@@ -82,3 +82,40 @@ Los logs de la funcion se ven con:
 ```bash
 aws logs tail /aws/lambda/register_user --since 10m
 ```
+
+## 3. Lambda `login_user`
+
+Codigo: [`lambdas/login_user/lambda_function.py`](lambdas/login_user/lambda_function.py)
+
+Recibe `email` y `password`, busca al usuario en la tabla `users` y compara la password con el hash guardado (`hmac.compare_digest`, para que la comparacion tarde lo mismo aunque no coincida). Si el email no existe o la password es incorrecta regresa el mismo mensaje, asi no se puede saber que cuentas estan registradas.
+
+| Respuesta | Cuando |
+|---|---|
+| 200 | Credenciales correctas, regresa `userId` y `username` |
+| 400 | Falta el email o la password |
+| 401 | Email o password incorrectos |
+| 500 | Error interno |
+
+Se despliega con el mismo `./scripts/deploy.sh` y se le aumenta el timeout igual que a `register_user`:
+
+```bash
+aws lambda update-function-configuration --function-name login_user \
+  --timeout 15 --memory-size 512
+aws lambda wait function-updated --function-name login_user
+```
+
+Probar el inicio de sesion con el usuario del paso anterior:
+
+```bash
+aws lambda invoke --function-name login_user \
+  --payload '{ "email": "vicky@example.com", "password": "minecraft123" }' \
+  --cli-binary-format raw-in-base64-out /dev/stdout
+```
+
+Respuesta esperada:
+
+```json
+{"statusCode": 200, "headers": {"Content-Type": "application/json"}, "body": "{\"message\": \"Inicio de sesion correcto\", \"userId\": \"1\", \"username\": \"vicky\"}"}
+```
+
+Con una password incorrecta la respuesta es `401`.
