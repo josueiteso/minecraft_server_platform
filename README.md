@@ -4,6 +4,10 @@ Plataforma web basada en AWS que maneja la creacion, administracion y alojamient
 
 Asegurate de tener Minecraft Java instalado y AWS CLI configurado.
 
+## Documentacion por flujo
+
+- [Flujo 1: registro, inicio de sesion y panel de servidores](README_flujo1.md)
+
 # Fase 2
 
 ## Como crear el servidor de minecraft.
