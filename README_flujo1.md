@@ -119,3 +119,43 @@ Respuesta esperada:
 ```
 
 Con una password incorrecta la respuesta es `401`.
+
+## 4. Lambda `list_servers`
+
+Codigo: [`lambdas/list_servers/lambda_function.py`](lambdas/list_servers/lambda_function.py)
+
+Recibe `userId` y regresa los servidores de ese usuario, que lee de la tabla `servers` que crea la Lambda `create_server` (flujo 2). Solo lee esa tabla, no la modifica.
+
+El estado y la IP publica se consultan en EC2 en cada llamada (`describe_instances`) y no se toman de la base de datos: en el Learner Lab las instancias se detienen al terminar la sesion y al encenderlas reciben una IP publica nueva, asi que la IP guardada dejaria de servir. Si una instancia ya no existe en EC2 se reporta como `terminated`.
+
+| Respuesta | Cuando |
+|---|---|
+| 200 | Regresa la lista `servers` (vacia si el usuario no tiene servidores) |
+| 400 | Falta el `userId` |
+| 500 | Error interno |
+
+Cada servidor de la lista tiene `serverId`, `serverName`, `status` (estado actual en EC2), `dbStatus` (estado guardado en RDS), `publicIp`, `address` (IP y puerto 25565 para pegar en Minecraft), `instanceType` y `createdAt`.
+
+Se despliega con `./scripts/deploy.sh` y se le aumenta el timeout:
+
+```bash
+aws lambda update-function-configuration --function-name list_servers \
+  --timeout 15 --memory-size 512
+aws lambda wait function-updated --function-name list_servers
+```
+
+Probar con el `userId` que regreso el registro:
+
+```bash
+aws lambda invoke --function-name list_servers \
+  --payload '{ "userId": "1" }' \
+  --cli-binary-format raw-in-base64-out /dev/stdout
+```
+
+Si el usuario aun no tiene servidores, la respuesta es:
+
+```json
+{"statusCode": 200, "headers": {"Content-Type": "application/json"}, "body": "{\"userId\": \"1\", \"servers\": []}"}
+```
+
+Al crear un servidor con `create_server` usando el mismo `userId` (ver el README), aparece en esta lista con su estado y su IP.
