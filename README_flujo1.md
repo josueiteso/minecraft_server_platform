@@ -159,3 +159,18 @@ Si el usuario aun no tiene servidores, la respuesta es:
 ```
 
 Al crear un servidor con `create_server` usando el mismo `userId` (ver el README), aparece en esta lista con su estado y su IP.
+
+## 5. Frontend
+
+Codigo: [`frontend/`](frontend/)
+
+Sitio estatico en HTML, CSS y JavaScript sin framework. Cada pantalla tiene su carpeta (`landing/`, `login/`, `registro/`, `servidores/`, `nuevo-servidor/`, `servidor/`) con su HTML, CSS y JS, y lo compartido esta en [`frontend/recursos-compartidos/`](frontend/recursos-compartidos/). La URL del API Gateway va en [`frontend/recursos-compartidos/config.js`](frontend/recursos-compartidos/config.js); mientras esta vacia, el frontend usa datos de ejemplo.
+
+Para probarlo en local, desde la raiz del repositorio:
+
+```bash
+cd frontend
+python3 -m http.server 8000
+```
+
+y abrir http://localhost:8000 en el navegador. Hace falta un servidor (no abrir el `index.html` con doble clic) porque los archivos `.js` se cargan como modulos.
