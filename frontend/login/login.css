@@ -82,6 +82,10 @@
 
 .password-field input { padding-right: 52px; }
 
+/* Edge agrega su propio boton de ver contrasena; se oculta para que no salgan dos ojos */
+.password-field input::-ms-reveal,
+.password-field input::-ms-clear { display: none; }
+
 .password-field button {
   position: absolute;
   top: 5px;
