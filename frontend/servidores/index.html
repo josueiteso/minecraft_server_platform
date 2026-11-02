@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Mis servidores · NODO</title>
+    <link rel="stylesheet" href="../recursos-compartidos/base.css" />
+    <link rel="stylesheet" href="servidores.css" />
+  </head>
+  <body>
+    <main class="app-shell-page">
+      <header class="app-header">
+        <a class="app-brand" href="../landing/" aria-label="Ir al inicio">
+          <span class="pixel-block" aria-hidden="true"><i></i></span>
+          <span>NODO_</span>
+        </a>
+        <div class="app-user">
+          <span aria-hidden="true" id="iniciales"></span>
+          <b id="saludo"></b>
+          <button id="cerrar-sesion">Cerrar sesión</button>
+        </div>
+      </header>
+
+      <div class="servers-content expanded">
+        <div class="servers-heading-row">
+          <div class="servers-title">
+            <p class="app-kicker"><span></span> BASE DE OPERACIONES</p>
+            <h1>Mis servidores</h1>
+          </div>
+          <a class="new-server-button" href="../nuevo-servidor/">+ Nuevo servidor</a>
+        </div>
+
+        <!-- mientras carga -->
+        <div class="server-card-grid" id="cargando" aria-label="Cargando servidores">
+          <article class="dashboard-server-card server-skeleton" aria-hidden="true">
+            <div class="skeleton-head"><i></i><span></span></div>
+            <div class="skeleton-line wide"></div>
+            <div class="skeleton-line short"></div>
+            <div class="skeleton-meta"><i></i><i></i></div>
+            <div class="skeleton-button"></div>
+          </article>
+          <article class="dashboard-server-card server-skeleton" aria-hidden="true">
+            <div class="skeleton-head"><i></i><span></span></div>
+            <div class="skeleton-line wide"></div>
+            <div class="skeleton-line short"></div>
+            <div class="skeleton-meta"><i></i><i></i></div>
+            <div class="skeleton-button"></div>
+          </article>
+          <article class="dashboard-server-card server-skeleton" aria-hidden="true">
+            <div class="skeleton-head"><i></i><span></span></div>
+            <div class="skeleton-line wide"></div>
+            <div class="skeleton-line short"></div>
+            <div class="skeleton-meta"><i></i><i></i></div>
+            <div class="skeleton-button"></div>
+          </article>
+        </div>
+
+        <!-- sin servidores o con error -->
+        <div class="servers-empty" id="vacio" hidden>
+          <span class="pixel-pickaxe" aria-hidden="true"><i></i></span>
+          <h2>Aún no tienes servidores</h2>
+          <p>Crea tu primer mundo y empieza la aventura.</p>
+          <a class="new-server-button" href="../nuevo-servidor/">Crear mi primer servidor</a>
+        </div>
+
+        <div class="server-card-grid" id="lista" hidden></div>
+      </div>
+    </main>
+
+    <script type="module" src="servidores.js"></script>
+  </body>
+</html>
