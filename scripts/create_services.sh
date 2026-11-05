@@ -6,6 +6,7 @@ set -e
 
 REGION="us-east-1"
 SG_NAME="minecraft-servers-sg"
+API_NAME="minecraft-servers-api"
 
 # el nombre del bucket incluye el ID de la cuenta para que sea unico en S3
 ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
@@ -66,5 +67,24 @@ else
   fi
 
 fi
+
+# crea la api gateway
+# las rutas se conectan en deploy.sh
+API_ID=$(aws apigatewayv2 get-apis --region "${REGION}" \
+  --query "Items[?Name=='${API_NAME}'].ApiId | [0]" --output text)
+
+if [ "$API_ID" = "None" ] || [ -z "$API_ID" ]; then
+  echo "Creando API Gateway ${API_NAME}..."
+  API_ID=$(aws apigatewayv2 create-api --name "${API_NAME}" --protocol-type HTTP \
+    --cors-configuration '{"AllowOrigins":["*"],"AllowMethods":["GET","POST","PUT","DELETE","OPTIONS"],"AllowHeaders":["Content-Type","Authorization"]}' \
+    --region "${REGION}" --query 'ApiId' --output text)
+  # sin --target no se crea stage, con auto-deploy los cambios de rutas se publican solos
+  # shellcheck disable=SC2016
+  aws apigatewayv2 create-stage --api-id "${API_ID}" --stage-name '$default' \
+    --auto-deploy --region "${REGION}" > /dev/null
+else
+  echo "El API ${API_NAME} ya existe."
+fi
+echo "Invoke URL: https://${API_ID}.execute-api.${REGION}.amazonaws.com"
 
 echo "Servicios creados correctamente."

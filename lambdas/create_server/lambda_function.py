@@ -1,3 +1,4 @@
+import base64
 import json
 import os
 import re
@@ -16,6 +17,8 @@ SECURITY_GROUP_NAME = os.environ.get("SECURITY_GROUP_NAME", "minecraft-servers-s
 INSTANCE_TYPE = os.environ.get("INSTANCE_TYPE", "t3.medium")
 
 VALID_GAME_MODES = {"survival", "creative", "adventure", "spectator"}
+
+HEADERS = {"Content-Type": "application/json"}
 
 
 def get_security_group_id():
@@ -43,6 +46,28 @@ def get_rds_credentials():
         "password": secret["password"],
         "dbname": instance["DBName"],
     }
+
+
+def response(status, body):
+    return {
+        "statusCode": status.value if isinstance(status, HTTPStatus) else status,
+        "headers": HEADERS,
+        "body": json.dumps(body),
+    }
+
+
+# devuelve el payload ya como dict
+def parse_event(event):
+
+    if "body" not in event:
+        return event
+    raw = event["body"] or "{}"
+    if event.get("isBase64Encoded"):
+        raw = base64.b64decode(raw).decode("utf-8")
+    payload = json.loads(raw)
+    if not isinstance(payload, dict):
+        raise TypeError("El body debe ser un objeto JSON")
+    return payload
 
 
 def register_server(user_id, instance_id, server_name):
@@ -136,41 +161,42 @@ systemctl enable --now minecraft
 
 def lambda_handler(event, context):
     try:
-        user_id = event.get("userId")
-        server_name = str(event.get("serverName", "mc-server"))
-        mc_version = str(event.get("minecraftVersion", "1.21.10"))
-        game_mode = str(event.get("gameMode", "survival")).lower()
-        max_players = event.get("maxPlayers", 10)
+        try:
+            payload = parse_event(event)
+        except (ValueError, TypeError):  # JSONDecodeError hereda de ValueError
+            return response(
+                HTTPStatus.BAD_REQUEST, {"error": "El body debe ser un JSON valido"}
+            )
+
+        user_id = payload.get("userId")
+        server_name = str(payload.get("serverName", "mc-server"))
+        mc_version = str(payload.get("minecraftVersion", "1.21.10"))
+        game_mode = str(payload.get("gameMode", "survival")).lower()
+        max_players = payload.get("maxPlayers", 10)
 
         # validacion de parametros
         if not user_id:
-            return {
-                "statusCode": HTTPStatus.BAD_REQUEST.value,
-                "body": json.dumps({"error": "El campo userId es requerido"}),
-            }
+            return response(
+                HTTPStatus.BAD_REQUEST, {"error": "El campo userId es requerido"}
+            )
         if not re.fullmatch(r"\d+\.\d+(\.\d+)?", mc_version):
-            return {
-                "statusCode": HTTPStatus.BAD_REQUEST.value,
-                "body": json.dumps({"error": "minecraftVersion invalida"}),
-            }
+            return response(
+                HTTPStatus.BAD_REQUEST, {"error": "minecraftVersion invalida"}
+            )
         if game_mode not in VALID_GAME_MODES:
-            return {
-                "statusCode": HTTPStatus.BAD_REQUEST.value,
-                "body": json.dumps(
-                    {"error": f"gameMode debe ser uno de {sorted(VALID_GAME_MODES)}"}
-                ),
-            }
+            return response(
+                HTTPStatus.BAD_REQUEST,
+                {"error": f"gameMode debe ser uno de {sorted(VALID_GAME_MODES)}"},
+            )
         try:
             max_players = int(max_players)
             if not 1 <= max_players <= 100:
                 raise ValueError
         except (TypeError, ValueError):
-            return {
-                "statusCode": HTTPStatus.BAD_REQUEST.value,
-                "body": json.dumps(
-                    {"error": "Solo se aceptane entre 1 y 100 jugadores"}
-                ),
-            }
+            return response(
+                HTTPStatus.BAD_REQUEST,
+                {"error": "Solo se aceptan entre 1 y 100 jugadores"},
+            )
         server_name = re.sub(r"[^A-Za-z0-9 _\-]", "", server_name)[:50] or "mc-server"
 
         user_data = build_user_data(mc_version, game_mode, max_players, server_name)
@@ -186,7 +212,7 @@ def lambda_handler(event, context):
                 {
                     "ResourceType": "instance",
                     "Tags": [
-                        {"Key": "Name", "Value": f"{server_name}"},
+                        {"Key": "Name", "Value": server_name},
                         {"Key": "OwnerId", "Value": str(user_id)},
                     ],
                 }
@@ -199,24 +225,23 @@ def lambda_handler(event, context):
             register_server(user_id, instance_id, server_name)
         except Exception as db_err:
             # evita instancias sin registro
-            print(f"Fallo al registrar en BD, terminando {instance_id}: {db_err}")
+            print(
+                f"Fallo al registrar en base de datos, terminando {instance_id}: {db_err}"
+            )
             ec2_client.terminate_instances(InstanceIds=[instance_id])
             raise
 
-        return {
-            "statusCode": HTTPStatus.OK.value,
-            "body": json.dumps(
-                {
-                    "message": "Servidor EC2 en proceso de creacion.",
-                    "instanceId": instance_id,
-                    "status": "creating",
-                }
-            ),
-        }
+        return response(
+            HTTPStatus.ACCEPTED,
+            {
+                "message": "Servidor en proceso de creacion.",
+                "instanceId": instance_id,
+                "status": "creating",
+            },
+        )
 
     except Exception as e:  # noqa: BLE001
         print(f"Error procesando solicitud: {type(e).__name__}: {e}")
-        return {
-            "statusCode": HTTPStatus.INTERNAL_SERVER_ERROR.value,
-            "body": json.dumps({"error": "Internal Server Error"}),
-        }
+        return response(
+            HTTPStatus.INTERNAL_SERVER_ERROR, {"error": "Internal Server Error"}
+        )
