@@ -45,12 +45,12 @@ Desde Postman o cURL (en otra terminal) prueba crear un servidor:
 Body esperado:
 
 ```
-{ 
-    "userId": <id_usuario>, 
-    "serverName": <nombre_del_servidor>, 
-    "minecraftVersion": <version_de_minecraft>, 
+{
+    "userId": <id_usuario>,
+    "serverName": <nombre_del_servidor>,
+    "minecraftVersion": <version_de_minecraft>,
     "gameMode": <modo_de_juego>,
-    "maxPlayers": <num_jugadores> 
+    "maxPlayers": <num_jugadores>
 }
 ```
 
