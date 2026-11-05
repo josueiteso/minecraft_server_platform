@@ -139,7 +139,7 @@ if [ "$LAMBDA_SG_ID" != "None" ]; then
         --protocol tcp --port "$PORT" --source-group "$LAMBDA_SG_ID" >/dev/null 2>&1 || true
     done
   done
- 
+
   # las ENIs de las lambdas en VPC pueden tardar en liberarse, asi que se reintenta
   SG_DELETED=false
   for _ in $(seq 1 12); do
@@ -155,7 +155,7 @@ if [ "$LAMBDA_SG_ID" != "None" ]; then
     echo "No se pudo eliminar $LAMBDA_SG_NAME (algo aun lo usa). Vuelve a ejecutar el script en unos minutos."
   fi
 fi
- 
+
 if [ "$SERVERS_SG_ID" != "None" ]; then
   aws ec2 delete-security-group --region "$REGION" --group-id "$SERVERS_SG_ID" \
     && echo "Security group $SG_NAME eliminado." \
