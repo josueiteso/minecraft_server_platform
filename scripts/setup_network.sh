@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# script que configura los security groups y bpc endpoints para que las lambdas puedan comunicarse con RDS
+# script que configura los security groups y vpc endpoints para que las lambdas puedan comunicarse con RDS
 
 set -e
 
