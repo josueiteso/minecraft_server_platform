@@ -203,11 +203,7 @@ curl -i -X POST "$API_URL/login" -H "Content-Type: application/json"   -d '{"ema
 curl -i "$API_URL/servers?userId=1"
 ```
 
-Para que el frontend use la API real, se pone la misma URL en [`frontend/recursos-compartidos/config.js`](frontend/recursos-compartidos/config.js):
-
-```js
-export const API_URL = "https://<api-id>.execute-api.us-east-1.amazonaws.com";
-```
+Para probar el frontend en local contra la API real, se pone esa URL en [`frontend/recursos-compartidos/config.js`](frontend/recursos-compartidos/config.js) (sin hacer commit de ese cambio). Al publicarlo en S3 no hace falta: `deploy_frontend.sh` la pone solo (seccion 8).
 
 ## 7. Pruebas unitarias
 
@@ -229,3 +225,22 @@ source .venv/bin/activate
 pip install -r tests/requirements.txt
 pytest tests -v
 ```
+
+## 8. Publicar el frontend en S3
+
+Script: [`scripts/deploy_frontend.sh`](scripts/deploy_frontend.sh)
+
+Publica `frontend/` en un bucket de S3 configurado como sitio web estatico (como en la sesion 6):
+
+1. Busca la URL del API Gateway `minecraft-servers-api`.
+2. Crea el bucket `minecraft-frontend-<id de la cuenta>` si no existe y lo configura como sitio web con `index.html` como documento de indice, asi `/login/` abre `login/index.html`.
+3. Da lectura publica a los archivos con una bucket policy (`s3:GetObject`) en lugar de ACLs.
+4. Copia el frontend a una carpeta temporal, genera ahi `config.js` con la URL del API y lo sube con `aws s3 sync --delete`. El `config.js` del repo no se modifica.
+
+Se corre despues de `deploy.sh`:
+
+```bash
+./scripts/deploy_frontend.sh
+```
+
+Al final imprime la direccion del sitio, por ejemplo `http://minecraft-frontend-<id de la cuenta>.s3-website-us-east-1.amazonaws.com`. Cada vez que cambia el frontend se vuelve a correr el mismo script.
