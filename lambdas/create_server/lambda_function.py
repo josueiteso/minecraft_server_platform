@@ -17,6 +17,23 @@ SECURITY_GROUP_NAME = os.environ.get("SECURITY_GROUP_NAME", "minecraft-servers-s
 INSTANCE_TYPE = os.environ.get("INSTANCE_TYPE", "t3.medium")
 
 VALID_GAME_MODES = {"survival", "creative", "adventure", "spectator"}
+# nombre de cuenta de Minecraft Java: 3 a 16 letras, numeros o _
+MC_USERNAME_RE = re.compile(r"[A-Za-z0-9_]{3,16}")
+
+# si el usuario activa comandos, su cuenta queda como operador (op) del servidor.
+# ops.json necesita el UUID de la cuenta, que se busca en la API de Mojang al instalar;
+# si la busqueda falla el servidor se instala igual, solo sin operador
+OPS_SCRIPT = """
+echo "enable-command-block=true" >> server.properties
+OP_UUID=$(curl -fsS "https://api.mojang.com/users/profiles/minecraft/__OP__" | python3 -c "
+import sys, json
+i = json.load(sys.stdin)['id']
+print('-'.join([i[:8], i[8:12], i[12:16], i[16:20], i[20:]]))
+") || OP_UUID=""
+if [ -n "$OP_UUID" ]; then
+  echo "[{\\"uuid\\": \\"$OP_UUID\\", \\"name\\": \\"__OP__\\", \\"level\\": 4, \\"bypassesPlayerLimit\\": false}]" > ops.json
+fi
+"""
 
 HEADERS = {"Content-Type": "application/json"}
 
@@ -101,7 +118,8 @@ def register_server(user_id, instance_id, server_name):
         conn.close()
 
 
-def build_user_data(mc_version, game_mode, max_players, server_name):
+def build_user_data(mc_version, game_mode, max_players, server_name, op_username=None):
+    ops = OPS_SCRIPT.replace("__OP__", op_username) if op_username else ""
     return f"""#!/bin/bash
 set -e
 
@@ -136,6 +154,7 @@ gamemode={game_mode}
 max-players={max_players}
 motd={server_name}
 PROPS
+{ops}
 
 chown -R minecraft:minecraft /minecraft
 
@@ -173,6 +192,8 @@ def lambda_handler(event, context):
         mc_version = str(payload.get("minecraftVersion", "1.21.10"))
         game_mode = str(payload.get("gameMode", "survival")).lower()
         max_players = payload.get("maxPlayers", 10)
+        # opcional: con opUsername el servidor se crea con comandos activados para esa cuenta
+        op_username = str(payload.get("opUsername") or "").strip()
 
         # validacion de parametros
         if not user_id:
@@ -197,9 +218,13 @@ def lambda_handler(event, context):
                 HTTPStatus.BAD_REQUEST,
                 {"error": "Solo se aceptan entre 1 y 100 jugadores"},
             )
+        if op_username and not MC_USERNAME_RE.fullmatch(op_username):
+            return response(HTTPStatus.BAD_REQUEST, {"error": "opUsername invalido"})
         server_name = re.sub(r"[^A-Za-z0-9 _\-]", "", server_name)[:50] or "mc-server"
 
-        user_data = build_user_data(mc_version, game_mode, max_players, server_name)
+        user_data = build_user_data(
+            mc_version, game_mode, max_players, server_name, op_username or None
+        )
 
         ec2_response = ec2_client.run_instances(
             ImageId="ami-0c7217cdde317cfec",  # ami de ubuntu server en us-east-1
