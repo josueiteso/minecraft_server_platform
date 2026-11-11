@@ -117,6 +117,7 @@ html { scroll-padding-top: 70px; }
   grid-template-columns: 1.02fr .98fr;
   align-items: center;
   gap: 80px;
+  padding-top: 56px;
   padding-bottom: 96px;
   position: relative;
   z-index: 3;
