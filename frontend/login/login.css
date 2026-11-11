@@ -258,8 +258,15 @@
 .trees-front i:nth-child(3) { right: 7%; bottom: 20%; transform: scale(1.15); }
 
 @media (max-width: 800px) {
-  .auth-page { display: block; }
-  .auth-form-side { min-height: 100vh; padding: 34px 24px; border: 0; background: rgba(18,20,24,.82); }
-  .auth-scene { display: none; }
-  .auth-heading { padding-top: 60px; }
+  /* en celular el paisaje queda como franja abajo del formulario */
+  .auth-page { display: flex; flex-direction: column; }
+  .auth-form-side { min-height: 0; padding: 34px 24px 0; border: 0; background: rgba(18,20,24,.82); }
+  .auth-scene { flex: 1 0 190px; min-height: 190px; border-top: 3px solid #080a0d; box-shadow: none; }
+  .auth-scene::before { background: linear-gradient(180deg, rgba(8, 12, 24, .45), transparent 60%); }
+  .scene-copy { display: none; }
+  .hill-back { height: 58%; }
+  .hill-middle { height: 62%; }
+  .hill-front { height: 52%; }
+  .voxel-trees i { scale: .6; transform-origin: center bottom; }
+  .auth-heading { padding-top: 48px; }
 }
