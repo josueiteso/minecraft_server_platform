@@ -164,7 +164,7 @@ Al crear un servidor con `create_server` usando el mismo `userId` (ver el README
 
 Codigo: [`frontend/`](frontend/)
 
-Sitio estatico en HTML, CSS y JavaScript sin framework. Cada pantalla tiene su carpeta (`landing/`, `login/`, `registro/`, `servidores/`, `nuevo-servidor/`, `servidor/`) con su HTML, CSS y JS, y lo compartido esta en [`frontend/recursos-compartidos/`](frontend/recursos-compartidos/). La URL del API Gateway va en [`frontend/recursos-compartidos/config.js`](frontend/recursos-compartidos/config.js); mientras esta vacia, el frontend usa datos de ejemplo.
+Sitio estatico en HTML, CSS y JavaScript sin framework. La pagina de inicio es `frontend/index.html` (sus estilos, script e imagenes estan en `landing/`) para que se abra en la raiz del sitio sin `/landing/` en la URL. Las demas pantallas tienen su carpeta (`login/`, `registro/`, `servidores/`, `nuevo-servidor/`, `servidor/`) con su HTML, CSS y JS, y lo compartido esta en [`frontend/recursos-compartidos/`](frontend/recursos-compartidos/). La URL del API Gateway va en [`frontend/recursos-compartidos/config.js`](frontend/recursos-compartidos/config.js); mientras esta vacia, el frontend usa datos de ejemplo.
 
 Para probarlo en local, desde la raiz del repositorio:
 

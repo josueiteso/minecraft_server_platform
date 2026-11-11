@@ -19,7 +19,7 @@ export function leerSesion() {
 
 export function cerrarSesion() {
   localStorage.removeItem(CLAVE_SESION);
-  window.location.href = "../landing/";
+  window.location.href = "../";
 }
 
 // ---------- Utilidades ----------
