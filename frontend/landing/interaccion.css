@@ -148,7 +148,8 @@
 @media (max-width: 900px) {
   html { scroll-padding-top: 108px; }
   /* las secciones pasan a una segunda fila del navbar */
-  .nav { height: auto; flex-wrap: wrap; row-gap: 12px; padding-block: 14px; }
+  .nav { height: auto; display: flex; justify-content: space-between; flex-wrap: wrap; row-gap: 12px; padding-block: 14px; }
+  .nav.shell { width: calc(100% - 48px); }
   .nav-links { order: 3; width: 100%; justify-content: center; gap: 8px; }
   .nav-links a { min-height: 32px; padding: 0 10px; font-size: 8px; }
   .hero-content { grid-template-columns: 1fr; gap: 58px; padding-top: 65px; padding-bottom: 130px; }
@@ -167,6 +168,7 @@
   .shell { width: min(100% - 32px, 500px); }
   .hero-layer { min-height: 978px; }
   .nav { padding-block: 12px; }
+  .nav.shell { width: calc(100% - 32px); }
   .brand { font-size: 16px; gap: 8px; }
   .nav .pixel-block { width: 24px; height: 24px; }
   .nav-actions { gap: 8px; }

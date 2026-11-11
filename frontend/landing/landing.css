@@ -63,13 +63,21 @@ html { scroll-padding-top: 70px; }
   backdrop-filter: blur(4px);
 }
 
+/* navbar casi a todo lo ancho en 3 columnas: logo a la izquierda, secciones justo al centro
+   y botones de cuenta a la derecha (las columnas de los lados miden igual) */
+.nav.shell { width: calc(100% - 64px); }
+
 .nav {
   height: 66px;
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: space-between;
   gap: 20px;
 }
+
+.nav .brand { justify-self: start; }
+
+.nav-actions { justify-self: end; }
 
 .brand {
   display: inline-flex;
