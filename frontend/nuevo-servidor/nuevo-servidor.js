@@ -16,6 +16,7 @@ function iniciarNuevoServidor() {
   const errorOperador = formulario.querySelector('[data-error="operador"]');
   const campoOperador = document.getElementById("campo-operador");
   const botonesModo = formulario.querySelectorAll("[data-modo]");
+  const botonesPlan = formulario.querySelectorAll("[data-plan]");
   const menos = document.getElementById("menos-jugadores");
   const mas = document.getElementById("mas-jugadores");
   const aviso = document.getElementById("creando");
@@ -23,6 +24,9 @@ function iniciarNuevoServidor() {
   const boton = formulario.querySelector("button[type=submit]");
   const textoBoton = boton.innerHTML;
   let modo = "survival";
+  // el plan define la instancia en create_server y el maximo de jugadores que acepta
+  let plan = formulario.querySelector("[data-plan].selected");
+  const maximoJugadores = () => Number(plan.dataset.max);
 
   const actualizarResumen = () => {
     document.getElementById("resumen-nombre").textContent = nombre.value.trim() || "Tu nuevo servidor";
@@ -30,12 +34,18 @@ function iniciarNuevoServidor() {
     document.getElementById("resumen-modo").textContent = modo[0].toUpperCase() + modo.slice(1);
     document.getElementById("resumen-jugadores").textContent = `${jugadores.value} máximo`;
     document.getElementById("resumen-comandos").textContent = comandos.checked ? "Sí" : "No";
+    const nombrePlan = plan.dataset.plan[0].toUpperCase() + plan.dataset.plan.slice(1);
+    document.getElementById("resumen-plan").textContent = `${nombrePlan} · ${plan.dataset.ram}`;
+    document.getElementById("resumen-precio").textContent = plan.dataset.precio;
+    document.getElementById("limite-jugadores").textContent =
+      `Entre 1 y ${maximoJugadores()} con el plan ${nombrePlan}`;
+    jugadores.max = maximoJugadores();
     menos.disabled = Number(jugadores.value) <= 1;
-    mas.disabled = Number(jugadores.value) >= 100;
+    mas.disabled = Number(jugadores.value) >= maximoJugadores();
   };
 
   const ponerJugadores = (n) => {
-    jugadores.value = Math.min(100, Math.max(1, Number(n) || 1));
+    jugadores.value = Math.min(maximoJugadores(), Math.max(1, Number(n) || 1));
     actualizarResumen();
   };
 
@@ -79,6 +89,18 @@ function iniciarNuevoServidor() {
     });
   });
 
+  botonesPlan.forEach((b) => {
+    b.addEventListener("click", () => {
+      plan = b;
+      botonesPlan.forEach((otro) => {
+        otro.classList.toggle("selected", otro === b);
+        otro.setAttribute("aria-checked", otro === b ? "true" : "false");
+      });
+      // si habia mas jugadores de los que aguanta el plan, se baja al maximo
+      ponerJugadores(jugadores.value);
+    });
+  });
+
   toast.querySelector("button").addEventListener("click", () => (toast.hidden = true));
 
   formulario.addEventListener("submit", async (evento) => {
@@ -107,6 +129,7 @@ function iniciarNuevoServidor() {
         modo,
         Number(jugadores.value),
         nombreOperador,
+        plan.dataset.plan,
       );
       // create_server responde 202: la instancia se sigue creando en segundo plano
       if (status >= 200 && status < 300) {

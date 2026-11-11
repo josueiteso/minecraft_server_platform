@@ -38,9 +38,10 @@ export function listarServidores(userId) {
 }
 
 // POST /servers -> create_server
-// opUsername es opcional: si viene, el servidor se crea con comandos para esa cuenta de Minecraft
-export function crearServidor(userId, serverName, minecraftVersion, gameMode, maxPlayers, opUsername) {
-  const datos = { userId, serverName, minecraftVersion, gameMode, maxPlayers };
+// plan: piedra, hierro o diamante. opUsername es opcional: si viene, el servidor se crea
+// con comandos para esa cuenta de Minecraft
+export function crearServidor(userId, serverName, minecraftVersion, gameMode, maxPlayers, opUsername, plan) {
+  const datos = { userId, serverName, minecraftVersion, gameMode, maxPlayers, plan };
   if (opUsername) datos.opUsername = opUsername;
   if (MODO_EJEMPLO) return ejemploCrear(datos);
   return pedir("POST", "/servers", datos);
@@ -94,7 +95,10 @@ async function ejemploServidores() {
   });
   const base = [
     ...leer(CLAVE_CREADOS, []).map((s) =>
-      servidor(s.id, s.nombre, "pending", null, new Date(s.creado).toISOString(), "creating"),
+      ({
+        ...servidor(s.id, s.nombre, "pending", null, new Date(s.creado).toISOString(), "creating"),
+        instanceType: s.instancia || "t3.medium",
+      }),
     ),
     servidor("i-0a1b2c3d4e5f60001", "Survival con amigos", "running", "54.210.33.12", "2026-03-12T18:20:00"),
     servidor("i-0a1b2c3d4e5f60002", "Mundo creativo", "stopped", null, "2026-03-04T21:05:00"),
@@ -157,13 +161,16 @@ function ipDeEjemplo(serverId, desde) {
   return `3.92.${20 + (n % 180)}.${30 + ((n * 7) % 200)}`;
 }
 
-async function ejemploCrear({ serverName }) {
+const INSTANCIA_DE_EJEMPLO = { piedra: "t3.small", hierro: "t3.medium", diamante: "t3.large" };
+
+async function ejemploCrear({ serverName, plan }) {
   await esperar(1500);
   if (serverName.toLowerCase() === "error") {
     return { status: 500, datos: { error: "Internal Server Error" } };
   }
   const id = `i-0ejemplo${Date.now().toString(16)}`;
-  const creados = [{ id, nombre: serverName, creado: Date.now() }, ...leer(CLAVE_CREADOS, [])];
+  const instancia = INSTANCIA_DE_EJEMPLO[plan] || "t3.medium";
+  const creados = [{ id, nombre: serverName, creado: Date.now(), instancia }, ...leer(CLAVE_CREADOS, [])];
   sessionStorage.setItem(CLAVE_CREADOS, JSON.stringify(creados));
   return {
     status: 202,

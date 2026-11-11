@@ -218,6 +218,7 @@ Pruebas con pytest de `register_user`, `login_user` y `list_servers`. No se cone
 | `test_login_user.py` | Faltan datos (400), login correcto (200), password incorrecta y email inexistente con el mismo mensaje (401), base de datos sin tabla `users` y hashes con formato desconocido |
 | `test_list_servers.py` | Sin `userId` (400), usuario sin servidores, estado e IP desde EC2, instancia que ya no existe (`terminated`), que solo consulte los servidores del usuario y error de EC2 (500) |
 | `test_delete_server.py` | Datos invalidos (400), borrado correcto (termina la instancia y quita el registro), servidor de otro usuario (404), instancia que ya no existe en EC2 y que no se borre el registro si falla EC2 (500) |
+| `test_create_server_planes.py` | Instancia y memoria de Java de cada plan, plan por defecto (Hierro), plan que no existe (400) y limite de jugadores de cada plan |
 | `test_create_server_comandos.py` | Servidor sin comandos, que con `opUsername` el script de la EC2 deje esa cuenta como operador antes de arrancar, y nombres de Minecraft invalidos (400) |
 
 Para correrlas, desde la raiz del repositorio:
@@ -272,3 +273,15 @@ curl -i -X DELETE "$API_URL/servers?userId=1&serverId=i-0123456789abcdef0"
 ### Comandos en el servidor
 
 Al crear un servidor el usuario puede activar comandos y escribir su nombre de Minecraft Java. El frontend lo manda como `opUsername` a `create_server`, que lo valida (3 a 16 letras, numeros o `_`) y agrega al script de arranque de la EC2 la creacion de `ops.json` con esa cuenta como operador (nivel 4), usando la API de Mojang para obtener su UUID. Asi puede usar `/gamemode`, `/tp`, `/time` y dar permisos a otros con `/op`. Si la cuenta no existe, el servidor se instala igual pero sin operador.
+
+## 10. Planes
+
+Al crear un servidor el usuario elige un plan; `create_server` lo recibe como `plan` (si no viene, usa `hierro`) y con el decide el tipo de instancia, la memoria que se le da a Java (dejando espacio al sistema operativo) y el maximo de jugadores que acepta:
+
+| Plan | Instancia | RAM | Memoria de Java | Jugadores | Costo aprox. encendido |
+|---|---|---|---|---|---|
+| Piedra | `t3.small` | 2 GB | 1 GB | hasta 5 | $0.026/h |
+| Hierro | `t3.medium` | 4 GB | 2.5 GB | hasta 15 | $0.047/h |
+| Diamante | `t3.large` | 8 GB | 6 GB | hasta 30 | $0.088/h |
+
+El costo es el precio por hora de la instancia en us-east-1 (Linux, bajo demanda) mas la IP publica ($0.005/h). Con el servidor apagado solo se cobra el disco de 8 GB (menos de $1 al mes) hasta que se borra. Los limites de jugadores son conservadores: las tres instancias tienen 2 vCPU y el servidor de Minecraft usa sobre todo un nucleo, asi que lo que cambia entre planes es la memoria para cargar el mundo. El Learner Lab permite instancias hasta tamano `large`.

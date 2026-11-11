@@ -351,6 +351,11 @@
 
 .plan-card button:disabled { cursor: not-allowed; color: #697278; background: #2b3338; }
 
+/* los planes que no son el recomendado llevan boton secundario */
+.plan-card:not(.featured) button { color: #e3e7e4; background: #3a434a; }
+
+.plan-card:not(.featured) button:hover { background: #4a545c; }
+
 
 .billing-note span { color: #d49351; margin-right: 8px; }
 

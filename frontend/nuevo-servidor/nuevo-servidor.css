@@ -144,6 +144,10 @@
 
 .creation-plan-check { position: absolute; top: 8px; right: 9px; color: #d69252; font-size: 12px; }
 
+.creation-plan:not(.selected) .creation-plan-check { display: none; }
+
+.creation-plan small + small { margin-top: 4px; color: #a6dc6e; }
+
 .creation-plan.disabled { cursor: not-allowed; color: #8a949c; background: #15191e; opacity: .8; }
 
 .creation-plan-tag { display: block; margin-bottom: 11px; color: #9aa5ad; font: 700 9px 'Silkscreen', monospace; }
