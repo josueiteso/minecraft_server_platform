@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Crear cuenta · NODO</title>
+    <link rel="stylesheet" href="../recursos-compartidos/base.css" />
+    <link rel="stylesheet" href="../login/login.css" />
+  </head>
+  <body>
+    <main class="auth-page">
+      <section class="auth-form-side">
+        <div class="auth-form-wrap">
+          <a class="app-brand" href="../landing/" aria-label="Volver al inicio">
+            <span class="pixel-block" aria-hidden="true"><i></i></span>
+            <span>NODO_</span>
+          </a>
+          <div class="auth-heading">
+            <p class="app-kicker"><span></span> NUEVA CUENTA</p>
+            <h1>Crea tu cuenta</h1>
+            <p>Empieza tu próxima aventura en minutos.</p>
+          </div>
+
+          <div class="auth-error" role="alert" hidden><i></i><span></span></div>
+
+          <form class="auth-form" id="form-registro" novalidate>
+            <label>
+              <span>Nombre de usuario</span>
+              <input name="username" autocomplete="username" placeholder="steve_builder" />
+              <small>3 a 30 caracteres: letras, números o _</small>
+              <em data-error="username" hidden></em>
+            </label>
+
+            <label>
+              <span>Correo electrónico</span>
+              <input type="email" name="email" autocomplete="email" />
+              <em data-error="email" hidden></em>
+            </label>
+
+            <label>
+              <span>Contraseña</span>
+              <span class="password-field">
+                <input type="password" name="password" autocomplete="new-password" />
+                <button type="button" class="ver-password" aria-label="Mostrar contraseña"></button>
+              </span>
+              <small>Mínimo 8 caracteres</small>
+              <em data-error="password" hidden></em>
+            </label>
+
+            <button class="app-primary-button" type="submit">
+              Crear mi cuenta <span aria-hidden="true">→</span>
+            </button>
+          </form>
+
+          <p class="auth-switch">¿Ya tienes cuenta? <a href="../login/">Inicia sesión</a></p>
+        </div>
+      </section>
+
+      <aside class="auth-scene" aria-hidden="true">
+        <div class="landscape-stars">
+          <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+        </div>
+        <div class="landscape-cloud cloud-a"><i></i></div>
+        <div class="landscape-cloud cloud-b"><i></i></div>
+        <div class="scene-copy">
+          <h2>Enciende. Juega. Apaga.</h2>
+          <p>Tu servidor espera justo donde lo dejaste.</p>
+        </div>
+        <div class="voxel-hills hill-back"></div>
+        <div class="voxel-hills hill-middle"></div>
+        <div class="voxel-trees trees-back"><i></i><i></i></div>
+        <div class="voxel-hills hill-front"></div>
+        <div class="voxel-trees trees-front"><i></i><i></i><i></i></div>
+      </aside>
+    </main>
+
+    <script type="module" src="registro.js"></script>
+  </body>
+</html>

@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Nuevo servidor · NODO</title>
+    <link rel="stylesheet" href="../recursos-compartidos/base.css" />
+    <link rel="stylesheet" href="nuevo-servidor.css" />
+  </head>
+  <body>
+    <main class="app-shell-page">
+      <header class="app-header">
+        <a class="app-brand" href="../landing/" aria-label="Ir al inicio">
+          <span class="pixel-block" aria-hidden="true"><i></i></span>
+          <span>NODO_</span>
+        </a>
+        <div class="app-user">
+          <span aria-hidden="true" id="iniciales"></span>
+          <b id="saludo"></b>
+          <button id="cerrar-sesion">Cerrar sesión</button>
+        </div>
+      </header>
+
+      <div class="creation-toast" role="alert" id="error-crear" hidden>
+        <span aria-hidden="true">!</span>
+        <p>No se pudo crear el servidor. Intenta de nuevo más tarde.</p>
+        <button type="button" aria-label="Cerrar mensaje">×</button>
+      </div>
+
+      <div class="new-server-page">
+        <a class="back-link" href="../servidores/">← Mis servidores</a>
+        <div class="new-server-heading">
+          <p class="app-kicker"><span></span> NUEVO MUNDO</p>
+          <h1>Nuevo servidor</h1>
+          <p>Configura lo esencial. Podrás empezar a jugar en unos minutos.</p>
+        </div>
+
+        <form class="server-creation-layout" id="form-nuevo" novalidate>
+          <div class="server-form-panel">
+            <section class="creation-section">
+              <div class="creation-section-title"><span>01</span><h2>Detalles</h2></div>
+              <label class="creation-field">
+                <span>Nombre del servidor</span>
+                <input name="nombre" maxlength="50" placeholder="Mi mundo survival" />
+                <small>Máximo 50 caracteres: letras, números, espacios, - y _</small>
+                <em data-error="nombre" hidden></em>
+              </label>
+
+              <label class="creation-field">
+                <span>Versión de Minecraft</span>
+                <span class="select-wrap">
+                  <select name="version">
+                    <option>1.21.10</option>
+                    <option>1.21.9</option>
+                    <option>1.21.8</option>
+                    <option>1.20.6</option>
+                  </select>
+                </span>
+              </label>
+            </section>
+
+            <section class="creation-section">
+              <div class="creation-section-title"><span>02</span><h2>Modo de juego</h2></div>
+              <div class="game-mode-grid" role="radiogroup" aria-label="Modo de juego">
+                <button type="button" class="selected" role="radio" aria-checked="true" data-modo="survival">
+                  <span class="mode-icon pickaxe" aria-hidden="true"><i></i></span>
+                  <b>Survival</b>
+                  <i class="selection-mark" aria-hidden="true"></i>
+                </button>
+                <button type="button" role="radio" aria-checked="false" data-modo="creative">
+                  <span class="mode-icon block" aria-hidden="true"><i></i></span>
+                  <b>Creative</b>
+                  <i class="selection-mark" aria-hidden="true"></i>
+                </button>
+                <button type="button" role="radio" aria-checked="false" data-modo="adventure">
+                  <span class="mode-icon map" aria-hidden="true"><i></i></span>
+                  <b>Adventure</b>
+                  <i class="selection-mark" aria-hidden="true"></i>
+                </button>
+                <button type="button" role="radio" aria-checked="false" data-modo="spectator">
+                  <span class="mode-icon eye" aria-hidden="true"><i></i></span>
+                  <b>Spectator</b>
+                  <i class="selection-mark" aria-hidden="true"></i>
+                </button>
+              </div>
+            </section>
+
+            <section class="creation-section">
+              <div class="creation-section-title"><span>03</span><h2>Máximo de jugadores</h2></div>
+              <div class="player-stepper">
+                <button type="button" id="menos-jugadores" aria-label="Reducir jugadores">−</button>
+                <input type="number" name="jugadores" min="1" max="100" value="10" aria-label="Máximo de jugadores" />
+                <button type="button" id="mas-jugadores" aria-label="Aumentar jugadores">+</button>
+                <span>Entre 1 y 100</span>
+              </div>
+            </section>
+
+            <section class="creation-section">
+              <div class="creation-section-title"><span>04</span><h2>Plan</h2></div>
+              <div class="creation-plans" role="radiogroup" aria-label="Plan del servidor">
+                <button type="button" class="creation-plan disabled" disabled>
+                  <span class="creation-plan-tag">Próximamente</span>
+                  <b>Piedra</b>
+                  <strong>2 GB</strong>
+                </button>
+                <button type="button" class="creation-plan selected" role="radio" aria-checked="true">
+                  <span class="creation-plan-check" aria-hidden="true">✓</span>
+                  <b>Hierro</b>
+                  <strong>4 GB</strong>
+                  <small>t3.medium · $0.10/h estimado</small>
+                </button>
+                <button type="button" class="creation-plan disabled diamond-plan" disabled>
+                  <span class="creation-plan-tag">Próximamente</span>
+                  <b>Diamante</b>
+                  <strong>8 GB</strong>
+                </button>
+              </div>
+            </section>
+          </div>
+
+          <aside class="server-summary">
+            <div class="summary-card">
+              <p class="summary-kicker">RESUMEN</p>
+              <h2 id="resumen-nombre">Tu nuevo servidor</h2>
+              <dl>
+                <div><dt>Versión</dt><dd id="resumen-version">1.21.10</dd></div>
+                <div><dt>Modo</dt><dd id="resumen-modo">Survival</dd></div>
+                <div><dt>Jugadores</dt><dd id="resumen-jugadores">10 máximo</dd></div>
+                <div><dt>Plan</dt><dd>Hierro · 4 GB</dd></div>
+                <div class="summary-price"><dt>Estimado</dt><dd>$0.10/h</dd></div>
+              </dl>
+              <p class="pay-note"><span aria-hidden="true">◆</span> Solo pagas mientras el servidor está encendido</p>
+              <div class="creation-info" role="status" id="creando" hidden>
+                <i aria-hidden="true"></i>
+                <p><b>Creando tu servidor…</b> puede tardar unos minutos. Te llevaremos a tu panel cuando esté listo.</p>
+              </div>
+              <button class="app-primary-button summary-submit" type="submit">
+                Crear servidor <span aria-hidden="true">→</span>
+              </button>
+            </div>
+          </aside>
+        </form>
+      </div>
+    </main>
+
+    <script type="module" src="nuevo-servidor.js"></script>
+  </body>
+</html>

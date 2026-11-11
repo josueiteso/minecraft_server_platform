@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Servidor · NODO</title>
+    <link rel="stylesheet" href="../recursos-compartidos/base.css" />
+    <link rel="stylesheet" href="servidor.css" />
+  </head>
+  <body>
+    <main class="app-shell-page">
+      <header class="app-header">
+        <a class="app-brand" href="../landing/" aria-label="Ir al inicio">
+          <span class="pixel-block" aria-hidden="true"><i></i></span>
+          <span>NODO_</span>
+        </a>
+        <div class="app-user">
+          <span aria-hidden="true" id="iniciales"></span>
+          <b id="saludo"></b>
+          <button id="cerrar-sesion">Cerrar sesión</button>
+        </div>
+      </header>
+
+      <div class="success-toast" role="status" id="toast-ok" hidden></div>
+      <div class="creation-toast" role="alert" id="toast-error" hidden>
+        <span aria-hidden="true">!</span>
+        <p></p>
+        <button type="button" aria-label="Cerrar mensaje">×</button>
+      </div>
+
+      <div class="server-detail-page full-detail">
+        <a class="back-link" href="../servidores/">← Mis servidores</a>
+
+        <div class="detail-title-row">
+          <div>
+            <p class="app-kicker"><span></span> PANEL DEL SERVIDOR</p>
+            <h1 id="nombre">Cargando…</h1>
+          </div>
+          <span class="detail-status-badge dashboard-status" id="estado"></span>
+        </div>
+
+        <div class="detail-actions" aria-label="Acciones del servidor">
+          <button class="detail-action start" id="encender" disabled>
+            <span aria-hidden="true">▶</span> Encender
+          </button>
+          <button class="detail-action stop" id="apagar" disabled>
+            <span aria-hidden="true">■</span> Apagar
+          </button>
+          <button class="detail-action backup" id="respaldar" disabled>
+            <span aria-hidden="true">◆</span> Respaldar
+          </button>
+        </div>
+
+        <div class="long-operation-note" role="status" id="nota-espera" hidden>
+          <i aria-hidden="true"></i>
+          <div>
+            <b></b>
+            <span id="nota-respaldo" hidden>El servidor sigue encendido mientras se respalda.</span>
+            <p>Esto puede tardar unos minutos, la página se actualiza sola</p>
+          </div>
+        </div>
+
+        <section class="detail-ip-panel without-ip" id="panel-ip">
+          <div class="detail-ip-icon" aria-hidden="true"><i></i></div>
+          <div>
+            <span>DIRECCIÓN PÚBLICA</span>
+            <strong id="ip">Sin IP · se asigna al encender</strong>
+            <p id="ip-ayuda" hidden>Comparte esta IP con tus amigos para que se conecten</p>
+          </div>
+          <button id="copiar-ip" hidden>Copiar IP <span aria-hidden="true">▣</span></button>
+        </section>
+
+        <section class="detail-info-grid" aria-label="Información del servidor">
+          <article class="detail-info-card">
+            <span class="detail-info-icon state" aria-hidden="true"><i></i></span>
+            <div><p>Estado</p><strong id="info-estado">—</strong></div>
+          </article>
+          <article class="detail-info-card">
+            <span class="detail-info-icon address" aria-hidden="true"><i></i></span>
+            <div><p>Dirección IP</p><strong id="info-ip">—</strong></div>
+          </article>
+          <article class="detail-info-card">
+            <span class="detail-info-icon instance" aria-hidden="true"><i></i></span>
+            <div><p>Tipo de instancia</p><strong id="info-instancia">—</strong></div>
+          </article>
+          <article class="detail-info-card">
+            <span class="detail-info-icon date" aria-hidden="true"><i></i></span>
+            <div><p>Fecha de creación</p><strong id="info-fecha">—</strong></div>
+          </article>
+          <article class="detail-info-card">
+            <span class="detail-info-icon backup" aria-hidden="true"><i></i></span>
+            <div><p>Último respaldo</p><strong id="info-respaldo">—</strong></div>
+          </article>
+        </section>
+      </div>
+
+      <div class="pixel-modal-backdrop" role="presentation" id="modal-apagar" hidden>
+        <section class="pixel-modal" role="dialog" aria-modal="true" aria-labelledby="titulo-modal">
+          <span class="modal-warning-icon" aria-hidden="true">!</span>
+          <h2 id="titulo-modal">¿Apagar el servidor?</h2>
+          <p>Guardaremos un respaldo del mundo antes de apagarlo. Los jugadores conectados serán desconectados.</p>
+          <div>
+            <button class="modal-cancel" id="cancelar-apagar">Cancelar</button>
+            <button class="modal-confirm" id="confirmar-apagar">Sí, apagar</button>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <script type="module" src="servidor.js"></script>
+  </body>
+</html>

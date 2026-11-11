@@ -1,0 +1,104 @@
+import { crearServidor } from "../recursos-compartidos/api.js";
+import { pintarUsuario, requerirSesion } from "../recursos-compartidos/comun.js";
+
+// mismas reglas que valida create_server
+const NOMBRE_VALIDO = /^[A-Za-z0-9 _-]+$/;
+
+function iniciarNuevoServidor() {
+  const sesion = requerirSesion();
+  if (!sesion) return;
+  pintarUsuario(sesion);
+
+  const formulario = document.getElementById("form-nuevo");
+  const { nombre, version, jugadores } = formulario.elements;
+  const errorNombre = formulario.querySelector('[data-error="nombre"]');
+  const botonesModo = formulario.querySelectorAll("[data-modo]");
+  const menos = document.getElementById("menos-jugadores");
+  const mas = document.getElementById("mas-jugadores");
+  const aviso = document.getElementById("creando");
+  const toast = document.getElementById("error-crear");
+  const boton = formulario.querySelector("button[type=submit]");
+  const textoBoton = boton.innerHTML;
+  let modo = "survival";
+
+  const actualizarResumen = () => {
+    document.getElementById("resumen-nombre").textContent = nombre.value.trim() || "Tu nuevo servidor";
+    document.getElementById("resumen-version").textContent = version.value;
+    document.getElementById("resumen-modo").textContent = modo[0].toUpperCase() + modo.slice(1);
+    document.getElementById("resumen-jugadores").textContent = `${jugadores.value} máximo`;
+    menos.disabled = Number(jugadores.value) <= 1;
+    mas.disabled = Number(jugadores.value) >= 100;
+  };
+
+  const ponerJugadores = (n) => {
+    jugadores.value = Math.min(100, Math.max(1, Number(n) || 1));
+    actualizarResumen();
+  };
+
+  const mostrarErrorNombre = (mensaje) => {
+    errorNombre.textContent = mensaje;
+    errorNombre.hidden = !mensaje;
+    nombre.setAttribute("aria-invalid", mensaje ? "true" : "false");
+  };
+
+  nombre.addEventListener("input", () => {
+    mostrarErrorNombre("");
+    actualizarResumen();
+  });
+  version.addEventListener("change", actualizarResumen);
+  jugadores.addEventListener("change", () => ponerJugadores(jugadores.value));
+  menos.addEventListener("click", () => ponerJugadores(Number(jugadores.value) - 1));
+  mas.addEventListener("click", () => ponerJugadores(Number(jugadores.value) + 1));
+
+  botonesModo.forEach((b) => {
+    b.addEventListener("click", () => {
+      modo = b.dataset.modo;
+      botonesModo.forEach((otro) => {
+        otro.classList.toggle("selected", otro === b);
+        otro.setAttribute("aria-checked", otro === b ? "true" : "false");
+      });
+      actualizarResumen();
+    });
+  });
+
+  toast.querySelector("button").addEventListener("click", () => (toast.hidden = true));
+
+  formulario.addEventListener("submit", async (evento) => {
+    evento.preventDefault();
+    toast.hidden = true;
+
+    const nombreServidor = nombre.value.trim();
+    if (!nombreServidor) return mostrarErrorNombre("Escribe un nombre para tu servidor.");
+    if (nombreServidor.length > 50 || !NOMBRE_VALIDO.test(nombreServidor)) {
+      return mostrarErrorNombre("Usa hasta 50 caracteres: letras, números, espacios, - y _.");
+    }
+
+    boton.disabled = true;
+    boton.textContent = "Creando servidor…";
+    aviso.hidden = false;
+    try {
+      const { status } = await crearServidor(
+        sesion.userId,
+        nombreServidor,
+        version.value,
+        modo,
+        Number(jugadores.value),
+      );
+      // create_server responde 202: la instancia se sigue creando en segundo plano
+      if (status >= 200 && status < 300) {
+        window.location.href = "../servidores/";
+        return;
+      }
+    } catch {
+      // se muestra el mismo mensaje de error
+    }
+    toast.hidden = false;
+    aviso.hidden = true;
+    boton.disabled = false;
+    boton.innerHTML = textoBoton;
+  });
+
+  actualizarResumen();
+}
+
+iniciarNuevoServidor();

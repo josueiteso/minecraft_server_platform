@@ -159,3 +159,52 @@ Si el usuario aun no tiene servidores, la respuesta es:
 ```
 
 Al crear un servidor con `create_server` usando el mismo `userId` (ver el README), aparece en esta lista con su estado y su IP.
+
+## 5. Frontend
+
+Codigo: [`frontend/`](frontend/)
+
+Sitio estatico en HTML, CSS y JavaScript sin framework. Cada pantalla tiene su carpeta (`landing/`, `login/`, `registro/`, `servidores/`, `nuevo-servidor/`, `servidor/`) con su HTML, CSS y JS, y lo compartido esta en [`frontend/recursos-compartidos/`](frontend/recursos-compartidos/). La URL del API Gateway va en [`frontend/recursos-compartidos/config.js`](frontend/recursos-compartidos/config.js); mientras esta vacia, el frontend usa datos de ejemplo.
+
+Para probarlo en local, desde la raiz del repositorio:
+
+```bash
+cd frontend
+python3 -m http.server 8000
+```
+
+y abrir http://localhost:8000 en el navegador. Hace falta un servidor (no abrir el `index.html` con doble clic) porque los archivos `.js` se cargan como modulos.
+
+## 6. Rutas en el API Gateway
+
+El API Gateway (`minecraft-servers-api`, HTTP API con CORS) lo crea `create_services.sh`. `deploy.sh` conecta cada Lambda con su ruta en la funcion `route_for`; las del flujo 1 son:
+
+| Ruta | Lambda |
+|---|---|
+| `POST /register` | `register_user` |
+| `POST /login` | `login_user` |
+| `GET /servers?userId=` | `list_servers` |
+
+`deploy.sh` tambien deja todas las Lambdas con 30 segundos de timeout (el maximo de API Gateway), asi que ya no hace falta subirlo a mano como en las secciones anteriores. Al terminar imprime la URL de la API:
+
+```bash
+./scripts/deploy.sh
+```
+
+Probar las rutas con la URL que imprimio (sin `/` al final):
+
+```bash
+API_URL="https://<api-id>.execute-api.us-east-1.amazonaws.com"
+
+curl -i -X POST "$API_URL/register" -H "Content-Type: application/json"   -d '{"username": "steve_builder", "email": "steve@correo.com", "password": "minecraft123"}'
+
+curl -i -X POST "$API_URL/login" -H "Content-Type: application/json"   -d '{"email": "steve@correo.com", "password": "minecraft123"}'
+
+curl -i "$API_URL/servers?userId=1"
+```
+
+Para que el frontend use la API real, se pone la misma URL en [`frontend/recursos-compartidos/config.js`](frontend/recursos-compartidos/config.js):
+
+```js
+export const API_URL = "https://<api-id>.execute-api.us-east-1.amazonaws.com";
+```
