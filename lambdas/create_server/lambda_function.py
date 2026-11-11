@@ -14,7 +14,14 @@ secrets_client = boto3.client("secretsmanager", region_name=REGION)
 
 DB_INSTANCE_ID = os.environ.get("DB_INSTANCE_ID", "minecraft-db-instance")
 SECURITY_GROUP_NAME = os.environ.get("SECURITY_GROUP_NAME", "minecraft-servers-sg")
-INSTANCE_TYPE = os.environ.get("INSTANCE_TYPE", "t3.medium")
+
+# planes: tipo de instancia, memoria para Java (deja espacio al sistema) y maximo de jugadores.
+# el maximo es lo que aguanta cada maquina sin lag en un servidor vanilla con 2 vCPU
+PLANS = {
+    "piedra": {"instanceType": "t3.small", "memory": "1G", "maxPlayers": 5},
+    "hierro": {"instanceType": "t3.medium", "memory": "2560M", "maxPlayers": 15},
+    "diamante": {"instanceType": "t3.large", "memory": "6G", "maxPlayers": 30},
+}
 
 VALID_GAME_MODES = {"survival", "creative", "adventure", "spectator"}
 # nombre de cuenta de Minecraft Java: 3 a 16 letras, numeros o _
@@ -118,7 +125,9 @@ def register_server(user_id, instance_id, server_name):
         conn.close()
 
 
-def build_user_data(mc_version, game_mode, max_players, server_name, op_username=None):
+def build_user_data(
+    mc_version, game_mode, max_players, server_name, op_username=None, memory="2G"
+):
     ops = OPS_SCRIPT.replace("__OP__", op_username) if op_username else ""
     return f"""#!/bin/bash
 set -e
@@ -166,7 +175,7 @@ After=network.target
 [Service]
 User=minecraft
 WorkingDirectory=/minecraft
-ExecStart=/usr/bin/java -Xms1G -Xmx2G -jar server.jar nogui
+ExecStart=/usr/bin/java -Xms{memory} -Xmx{memory} -jar server.jar nogui
 Restart=on-failure
 
 [Install]
@@ -192,6 +201,7 @@ def lambda_handler(event, context):
         mc_version = str(payload.get("minecraftVersion", "1.21.10"))
         game_mode = str(payload.get("gameMode", "survival")).lower()
         max_players = payload.get("maxPlayers", 10)
+        plan_name = str(payload.get("plan", "hierro")).lower()
         # opcional: con opUsername el servidor se crea con comandos activados para esa cuenta
         op_username = str(payload.get("opUsername") or "").strip()
 
@@ -209,26 +219,40 @@ def lambda_handler(event, context):
                 HTTPStatus.BAD_REQUEST,
                 {"error": f"gameMode debe ser uno de {sorted(VALID_GAME_MODES)}"},
             )
+        plan = PLANS.get(plan_name)
+        if plan is None:
+            return response(
+                HTTPStatus.BAD_REQUEST,
+                {"error": f"plan debe ser uno de {sorted(PLANS)}"},
+            )
         try:
             max_players = int(max_players)
-            if not 1 <= max_players <= 100:
+            if not 1 <= max_players <= plan["maxPlayers"]:
                 raise ValueError
         except (TypeError, ValueError):
             return response(
                 HTTPStatus.BAD_REQUEST,
-                {"error": "Solo se aceptan entre 1 y 100 jugadores"},
+                {
+                    "error": f"El plan {plan_name} acepta entre 1 y "
+                    f"{plan['maxPlayers']} jugadores"
+                },
             )
         if op_username and not MC_USERNAME_RE.fullmatch(op_username):
             return response(HTTPStatus.BAD_REQUEST, {"error": "opUsername invalido"})
         server_name = re.sub(r"[^A-Za-z0-9 _\-]", "", server_name)[:50] or "mc-server"
 
         user_data = build_user_data(
-            mc_version, game_mode, max_players, server_name, op_username or None
+            mc_version,
+            game_mode,
+            max_players,
+            server_name,
+            op_username or None,
+            plan["memory"],
         )
 
         ec2_response = ec2_client.run_instances(
             ImageId="ami-0c7217cdde317cfec",  # ami de ubuntu server en us-east-1
-            InstanceType=INSTANCE_TYPE,
+            InstanceType=plan["instanceType"],
             MinCount=1,
             MaxCount=1,
             UserData=user_data,
@@ -239,6 +263,7 @@ def lambda_handler(event, context):
                     "Tags": [
                         {"Key": "Name", "Value": server_name},
                         {"Key": "OwnerId", "Value": str(user_id)},
+                        {"Key": "Plan", "Value": plan_name},
                     ],
                 }
             ],
@@ -261,6 +286,8 @@ def lambda_handler(event, context):
             {
                 "message": "Servidor en proceso de creacion.",
                 "instanceId": instance_id,
+                "plan": plan_name,
+                "instanceType": plan["instanceType"],
                 "status": "creating",
             },
         )
