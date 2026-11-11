@@ -44,6 +44,9 @@ fi
 route_for() {
   case "$1" in
     create_server) echo "POST /servers" ;;
+    register_user) echo "POST /register" ;;
+    login_user) echo "POST /login" ;;
+    list_servers) echo "GET /servers" ;;
     *) echo "" ;;
   esac
 }
