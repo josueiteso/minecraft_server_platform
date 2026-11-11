@@ -208,3 +208,24 @@ Para que el frontend use la API real, se pone la misma URL en [`frontend/recurso
 ```js
 export const API_URL = "https://<api-id>.execute-api.us-east-1.amazonaws.com";
 ```
+
+## 7. Pruebas unitarias
+
+Codigo: [`tests/`](tests/)
+
+Pruebas con pytest de `register_user`, `login_user` y `list_servers`. No se conectan a AWS: la conexion a RDS y el cliente de EC2 se reemplazan con objetos falsos (`unittest.mock`), asi que corren en segundos y sin credenciales del Learner Lab.
+
+| Archivo | Que prueba |
+|---|---|
+| `test_register_user.py` | Datos invalidos y JSON invalido (400), registro correcto (201), que la password se guarde con hash y el email en minusculas, usuario repetido (409) y error de base de datos (500) |
+| `test_login_user.py` | Faltan datos (400), login correcto (200), password incorrecta y email inexistente con el mismo mensaje (401), base de datos sin tabla `users` y hashes con formato desconocido |
+| `test_list_servers.py` | Sin `userId` (400), usuario sin servidores, estado e IP desde EC2, instancia que ya no existe (`terminated`), que solo consulte los servidores del usuario y error de EC2 (500) |
+
+Para correrlas, desde la raiz del repositorio:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r tests/requirements.txt
+pytest tests -v
+```
