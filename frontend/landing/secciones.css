@@ -240,6 +240,10 @@
   background-size: auto, 512px 384px;
 }
 
+/* precios: el contenido baja para librar los bloques de tierra de la transicion de arriba
+   y queda centrado en la parte gris (la piedra tambien se mete un poco en la seccion de abajo) */
+.stone-layer .section-content { padding-top: 205px; padding-bottom: 95px; }
+
 .cost-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
 
 .cost-card {

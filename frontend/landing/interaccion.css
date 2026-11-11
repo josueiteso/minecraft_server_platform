@@ -191,6 +191,7 @@
   .chip-top { right: -5px; top: -35px; }
   .chip-bottom { left: -5px; }
   .section-content { padding-block: 96px; }
+  .stone-layer .section-content { padding-top: 190px; padding-bottom: 70px; }
   .section-header { margin-bottom: 40px; }
   .section-header h2, .cta h2 { font-size: 26px; line-height: 1.3; }
   .section-header p:not(.eyebrow), .cta > p:not(.eyebrow) { font-size: 15px; }
