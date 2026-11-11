@@ -201,112 +201,121 @@ h1 em, h2 em {
 
 .server-stage { position: relative; perspective: 900px; }
 
+/* Tarjeta del servidor: ventana del juego con barra de titulo gris clara */
 .server-card {
   position: relative;
-  padding: 26px;
-  background: #151c29;
-  border: 3px solid #090d13;
-  box-shadow: 10px 10px 0 rgba(5,8,13,.7), inset 0 0 0 2px #2c3748;
+  background: #1b2232;
+  border: 3px solid #0a0d14;
+  box-shadow: inset 3px 3px 0 rgba(255, 255, 255, .08), inset -3px -3px 0 rgba(0, 0, 0, .45), 10px 10px 0 rgba(5, 8, 13, .7);
 }
 
-.server-card::before {
-  content: '';
-  position: absolute;
-  inset: 8px;
-  border: 1px solid rgba(255,255,255,.035);
-  pointer-events: none;
+.card-top {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 20px;
+  background: #c6c6c6;
+  border-bottom: 3px solid #0a0d14;
+  box-shadow: inset 3px 3px 0 #ffffff, inset -3px -3px 0 #555555;
 }
 
-.card-top { display: flex; align-items: center; gap: 14px; }
+.card-top .server-avatar { width: 58px; height: 58px; }
 
-.server-avatar { background: #252f40; padding: 9px; }
+.server-avatar .pixel-block { width: 30px; height: 30px; }
 
-.server-avatar .pixel-block { width: 27px; height: 27px; }
+.tiny-label { color: #555555; font: 700 10px 'Silkscreen', monospace; letter-spacing: .6px; }
 
-.tiny-label, .server-screen > p { color: #77859a; font: 700 8px 'Silkscreen', monospace; letter-spacing: .6px; }
-
-.card-top h2 { margin-top: 6px; font: 700 15px 'Silkscreen', monospace; color: #f4f2e8; }
+.card-top h2 { margin-top: 6px; color: #2b2b2b; font: 700 17px 'Silkscreen', monospace; }
 
 .online-badge {
   margin-left: auto;
   display: flex;
   align-items: center;
   gap: 7px;
-  color: #9fdd70;
-  background: #243724;
-  border: 1px solid #3e6133;
-  padding: 8px 9px;
-  font-size: 10px;
+  padding: 8px 10px;
+  color: #b6f08a;
+  background: #2a3d23;
+  border: 2px solid #16210f;
+  box-shadow: inset 1px 1px 0 rgba(255, 255, 255, .12);
+  font-size: 12px;
   font-weight: 700;
 }
 
-.online-badge i { width: 6px; height: 6px; background: #8bd553; box-shadow: 0 0 8px #8bd553; }
+.online-badge i { width: 7px; height: 7px; background: #8bd553; box-shadow: 0 0 8px #8bd553; animation: status-pulse 2.4s ease-in-out infinite; }
 
 .server-screen {
-  margin: 24px 0 20px;
+  margin: 20px 20px 16px;
   padding: 16px;
   background: #0c111c;
   border: 2px solid #293446;
-  box-shadow: inset 4px 4px 0 #090d13;
+  box-shadow: inset 4px 4px 0 #070a11;
 }
+
+.server-screen > p { color: #9aa8bb; font: 700 10px 'Silkscreen', monospace; letter-spacing: .6px; }
 
 .server-screen button {
   width: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
   margin-top: 10px;
-  padding: 12px;
-  color: #dce5ed;
+  padding: 13px 14px;
+  color: #f1f5f8;
   background: #192333;
-  border: 1px solid #34445a;
+  border: 2px solid #34445a;
 }
 
-.server-screen code { font: 700 clamp(11px, 1.2vw, 14px) 'Silkscreen', monospace; }
+.server-screen code { font: 700 clamp(13px, 1.4vw, 17px) 'Silkscreen', monospace; }
 
-.server-screen button > span { color: #98d763; font: 700 9px 'Silkscreen', monospace; }
+.server-screen button > span { color: #a6dc6e; font: 700 10px 'Silkscreen', monospace; }
 
-.server-info { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.server-info { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 0 20px; }
 
 .server-info span {
-  padding: 13px 10px;
-  background: #1b2534;
-  color: #e3e7e3;
-  font: 700 10px 'Silkscreen', monospace;
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  padding: 12px 8px;
+  color: #eef1f4;
+  background: #232c3e;
+  border: 2px solid #0a0d14;
+  box-shadow: inset 2px 2px 0 rgba(255, 255, 255, .06);
+  font: 700 12px 'Silkscreen', monospace;
   text-align: center;
 }
 
-.server-info small { display: block; margin-bottom: 7px; color: #6e7e93; font-size: 7px; }
+.server-info .item { width: 32px; height: 32px; margin-bottom: 4px; }
+
+.server-info small { color: #9aa8bb; font-size: 9px; }
 
 .card-status {
   display: flex;
   align-items: center;
-  margin-top: 20px;
-  padding-top: 17px;
-  border-top: 1px solid #2e3949;
-  color: #8190a2;
-  font-size: 10px;
+  gap: 9px;
+  margin: 18px 20px 20px;
+  padding-top: 14px;
+  border-top: 2px solid #2e3949;
+  color: #c7d1dc;
+  font-size: 14px;
+  font-weight: 600;
 }
 
-.card-status > span { width: 7px; height: 7px; margin-right: 7px; background: #8bd553; }
-
-.card-status b { color: #aab5c1; }
-
-.card-status i { margin-left: auto; color: #66778b; font-style: normal; font-family: 'Silkscreen', monospace; }
+.card-status::before { content: ''; flex: 0 0 auto; width: 8px; height: 8px; background: #8dca52; box-shadow: 2px 2px 0 #0a0d14; }
 
 .floating-chip {
   position: absolute;
   padding: 9px 12px;
-  background: #27354b;
-  border: 2px solid #090d13;
-  box-shadow: 3px 3px 0 #090d13;
-  color: #d5dde5;
-  font: 700 8px 'Silkscreen', monospace;
+  color: #2b2b2b;
+  background: #c6c6c6;
+  border: 3px solid #0a0d14;
+  box-shadow: inset 2px 2px 0 #ffffff, inset -2px -2px 0 #555555, 4px 4px 0 #090d13;
+  font: 700 10px 'Silkscreen', monospace;
 }
 
 .chip-top { right: -21px; top: -24px; }
 
-.chip-bottom { left: -28px; bottom: -24px; color: #a7df72; }
+.chip-bottom { left: -28px; bottom: -24px; color: #10190c; background: #8dca52; box-shadow: inset 2px 2px 0 rgba(255, 255, 255, .35), inset -2px -2px 0 #4f7a2c, 4px 4px 0 #090d13; }
 
 .stars i {
   position: absolute;
@@ -875,9 +884,9 @@ h1 em, h2 em {
 
 @media (hover: hover) {
   .server-stage:hover { translate: -4px -6px; }
-  .server-stage:hover .server-card { border-color: #0b1018; box-shadow: 16px 16px 0 rgba(5,8,13,.7), inset 0 0 0 2px #5b8f3e, 0 0 32px rgba(141,202,82,.12); }
+  .server-stage:hover .server-card { border-color: #5b8f3e; box-shadow: inset 3px 3px 0 rgba(255, 255, 255, .08), inset -3px -3px 0 rgba(0, 0, 0, .45), 16px 16px 0 rgba(5, 8, 13, .7), 0 0 32px rgba(141, 202, 82, .2); }
   .server-screen button:hover { border-color: #8dca52; background: #1f2c3f; }
-  .server-info span:hover { translate: 0 -3px; background: #233044; box-shadow: 0 3px 0 #8dca52; }
+  .server-info span:hover { translate: 0 -3px; background: #2a3550; box-shadow: inset 2px 2px 0 rgba(255, 255, 255, .06), 0 3px 0 #8dca52; }
 
   .earth-card:hover { translate: -4px -6px; border-color: #b8862e; box-shadow: inset 0 -5px 0 #d9c497, 13px 13px 0 rgba(20, 12, 8, .55), 0 0 30px rgba(227, 183, 102, .45); }
   .earth-card:hover .item, .cost-card:hover .item, .plan-card:hover .item { translate: 0 -5px; }
@@ -945,15 +954,18 @@ h1 em, h2 em {
   .hero-subtitle { font-size: 16px; line-height: 1.55; }
   .trust-row { gap: 10px; font-size: 12px; }
   .trust-row span + span::before { margin-right: 4px; }
-  .server-card { padding: 18px 14px; }
   .card-top { align-items: flex-start; }
-  .server-avatar { display: none; }
-  .card-top h2 { font-size: 11px; }
-  .online-badge { padding: 6px; font-size: 8px; }
-  .server-screen { padding: 12px; }
-  .server-screen code { font-size: 9px; }
-  .server-info { gap: 4px; }
-  .server-info span { padding: 10px 3px; font-size: 7px; }
+  .card-top { padding: 14px; gap: 10px; }
+  .card-top .server-avatar { width: 46px; height: 46px; }
+  .server-avatar .pixel-block { width: 24px; height: 24px; }
+  .card-top h2 { font-size: 13px; }
+  .online-badge { padding: 6px 8px; font-size: 11px; }
+  .server-screen { margin: 16px 14px 14px; padding: 12px; }
+  .server-screen code { font-size: 12px; }
+  .server-info { gap: 6px; margin: 0 14px; }
+  .server-info span { padding: 10px 3px; font-size: 10px; }
+  .server-info .item { width: 26px; height: 26px; }
+  .card-status { margin: 16px 14px 18px; font-size: 13px; }
   .chip-top { right: -5px; top: -35px; }
   .chip-bottom { left: -5px; }
   .section-content { padding-block: 96px; }
