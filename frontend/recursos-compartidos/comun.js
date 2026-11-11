@@ -39,7 +39,22 @@ export async function copiarTexto(texto) {
     await navigator.clipboard.writeText(texto);
     return true;
   } catch {
-    return false;
+    // el sitio de S3 es http y ahi el navegador no deja usar navigator.clipboard;
+    // se copia con un campo de texto oculto
+    const campo = document.createElement("textarea");
+    campo.value = texto;
+    campo.setAttribute("readonly", "");
+    campo.style.position = "fixed";
+    campo.style.opacity = "0";
+    document.body.append(campo);
+    campo.select();
+    try {
+      return document.execCommand("copy");
+    } catch {
+      return false;
+    } finally {
+      campo.remove();
+    }
   }
 }
 
