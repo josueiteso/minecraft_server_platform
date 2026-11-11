@@ -52,6 +52,27 @@
 
 .creation-field em { margin-top: 7px; color: #f09184; font-size: 13px; font-style: normal; }
 
+.commands-toggle { display: flex; align-items: center; gap: 16px; cursor: pointer; }
+
+.commands-toggle input { position: absolute; opacity: 0; pointer-events: none; }
+
+.commands-toggle b { display: block; color: #eef1f3; font-size: 15px; }
+
+.commands-toggle small { display: block; margin-top: 5px; color: #aab4bf; font-size: 13px; line-height: 1.5; }
+
+/* interruptor pixel: el cuadro se mueve a la derecha y se pone verde al activarlo */
+.commands-switch { position: relative; flex: 0 0 auto; width: 54px; height: 28px; background: #121519; border: 3px solid #363c45; box-shadow: 3px 3px 0 #080a0c; transition: background-color .15s, border-color .15s; }
+
+.commands-switch i { position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; background: #6f7880; transition: left .15s steps(3), background-color .15s; }
+
+.commands-toggle input:checked + .commands-switch { background: #273322; border-color: #5f8f42; }
+
+.commands-toggle input:checked + .commands-switch i { left: 29px; background: #8dc955; }
+
+.commands-toggle input:focus-visible + .commands-switch { outline: 2px solid #8dc955; outline-offset: 3px; }
+
+.commands-user { margin-top: 22px; }
+
 .select-wrap { position: relative; }
 
 .select-wrap::after { content: '▾'; position: absolute; top: 16px; right: 16px; color: #93ca5e; pointer-events: none; }

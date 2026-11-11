@@ -184,6 +184,7 @@ El API Gateway (`minecraft-servers-api`, HTTP API con CORS) lo crea `create_serv
 | `POST /register` | `register_user` |
 | `POST /login` | `login_user` |
 | `GET /servers?userId=` | `list_servers` |
+| `DELETE /servers?userId=&serverId=` | `delete_server` (seccion 9) |
 
 `deploy.sh` tambien deja todas las Lambdas con 30 segundos de timeout (el maximo de API Gateway), asi que ya no hace falta subirlo a mano como en las secciones anteriores. Al terminar imprime la URL de la API:
 
@@ -216,6 +217,8 @@ Pruebas con pytest de `register_user`, `login_user` y `list_servers`. No se cone
 | `test_register_user.py` | Datos invalidos y JSON invalido (400), registro correcto (201), que la password se guarde con hash y el email en minusculas, usuario repetido (409) y error de base de datos (500) |
 | `test_login_user.py` | Faltan datos (400), login correcto (200), password incorrecta y email inexistente con el mismo mensaje (401), base de datos sin tabla `users` y hashes con formato desconocido |
 | `test_list_servers.py` | Sin `userId` (400), usuario sin servidores, estado e IP desde EC2, instancia que ya no existe (`terminated`), que solo consulte los servidores del usuario y error de EC2 (500) |
+| `test_delete_server.py` | Datos invalidos (400), borrado correcto (termina la instancia y quita el registro), servidor de otro usuario (404), instancia que ya no existe en EC2 y que no se borre el registro si falla EC2 (500) |
+| `test_create_server_comandos.py` | Servidor sin comandos, que con `opUsername` el script de la EC2 deje esa cuenta como operador antes de arrancar, y nombres de Minecraft invalidos (400) |
 
 Para correrlas, desde la raiz del repositorio:
 
@@ -244,3 +247,28 @@ Se corre despues de `deploy.sh`:
 ```
 
 Al final imprime la direccion del sitio, por ejemplo `http://minecraft-frontend-<id de la cuenta>.s3-website-us-east-1.amazonaws.com`. Cada vez que cambia el frontend se vuelve a correr el mismo script.
+
+## 9. Borrar servidores y comandos
+
+### Lambda `delete_server`
+
+Codigo: [`lambdas/delete_server/lambda_function.py`](lambdas/delete_server/lambda_function.py)
+
+Recibe `userId` y `serverId` (ruta `DELETE /servers?userId=&serverId=`). Revisa en la tabla `servers` que el servidor sea de ese usuario, termina la instancia en EC2 (se pierden la maquina, el disco y el mundo) y borra el registro de la tabla para que ya no aparezca en la lista. Si la instancia ya no existia en EC2 solo se borra el registro. Si EC2 falla, el registro se queda para poder reintentar.
+
+| Respuesta | Cuando |
+|---|---|
+| 200 | Servidor borrado |
+| 400 | Falta el `userId` o el `serverId` no tiene formato de instancia (`i-...`) |
+| 404 | El servidor no existe o es de otro usuario |
+| 500 | Error interno |
+
+En el frontend se borra desde el detalle del servidor, con una ventana de confirmacion.
+
+```bash
+curl -i -X DELETE "$API_URL/servers?userId=1&serverId=i-0123456789abcdef0"
+```
+
+### Comandos en el servidor
+
+Al crear un servidor el usuario puede activar comandos y escribir su nombre de Minecraft Java. El frontend lo manda como `opUsername` a `create_server`, que lo valida (3 a 16 letras, numeros o `_`) y agrega al script de arranque de la EC2 la creacion de `ops.json` con esa cuenta como operador (nivel 4), usando la API de Mojang para obtener su UUID. Asi puede usar `/gamemode`, `/tp`, `/time` y dar permisos a otros con `/op`. Si la cuenta no existe, el servidor se instala igual pero sin operador.

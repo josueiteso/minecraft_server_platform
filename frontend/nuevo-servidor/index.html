@@ -117,6 +117,24 @@
                 </button>
               </div>
             </section>
+
+            <section class="creation-section">
+              <div class="creation-section-title"><span>05</span><h2>Comandos</h2></div>
+              <label class="commands-toggle">
+                <input type="checkbox" name="comandos" />
+                <span class="commands-switch" aria-hidden="true"><i></i></span>
+                <span>
+                  <b>Activar comandos</b>
+                  <small>Tu cuenta podrá usar /gamemode, /tp, /time y dar permisos a tus amigos con /op</small>
+                </span>
+              </label>
+              <label class="creation-field commands-user" id="campo-operador" hidden>
+                <span>Tu nombre en Minecraft Java</span>
+                <input name="operador" maxlength="16" autocomplete="off" placeholder="constructor_22" />
+                <small>El nombre exacto de tu cuenta: 3 a 16 letras, números o _</small>
+                <em data-error="operador" hidden></em>
+              </label>
+            </section>
           </div>
 
           <aside class="server-summary">
@@ -127,6 +145,7 @@
                 <div><dt>Versión</dt><dd id="resumen-version">1.21.11</dd></div>
                 <div><dt>Modo</dt><dd id="resumen-modo">Survival</dd></div>
                 <div><dt>Jugadores</dt><dd id="resumen-jugadores">10 máximo</dd></div>
+                <div><dt>Comandos</dt><dd id="resumen-comandos">No</dd></div>
                 <div><dt>Plan</dt><dd>Hierro · 4 GB</dd></div>
                 <div class="summary-price"><dt>Estimado</dt><dd>$0.10/h</dd></div>
               </dl>

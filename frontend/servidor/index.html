@@ -84,6 +84,16 @@
             <div><p>Último respaldo</p><strong id="info-respaldo">—</strong></div>
           </article>
         </section>
+
+        <section class="detail-danger" aria-labelledby="titulo-borrar">
+          <div>
+            <h2 id="titulo-borrar">Borrar servidor</h2>
+            <p>Se elimina la máquina en AWS junto con el mundo. No se puede deshacer.</p>
+          </div>
+          <button class="detail-action stop" id="borrar" disabled>
+            <span aria-hidden="true">✕</span> Borrar
+          </button>
+        </section>
       </div>
 
       <div class="pixel-modal-backdrop" role="presentation" id="modal-apagar" hidden>
@@ -94,6 +104,18 @@
           <div>
             <button class="modal-cancel" id="cancelar-apagar">Cancelar</button>
             <button class="modal-confirm" id="confirmar-apagar">Sí, apagar</button>
+          </div>
+        </section>
+      </div>
+
+      <div class="pixel-modal-backdrop" role="presentation" id="modal-borrar" hidden>
+        <section class="pixel-modal" role="dialog" aria-modal="true" aria-labelledby="titulo-modal-borrar">
+          <span class="modal-warning-icon" aria-hidden="true">!</span>
+          <h2 id="titulo-modal-borrar">¿Borrar el servidor?</h2>
+          <p>Se termina la instancia y se pierde el mundo para siempre. Los jugadores conectados serán desconectados.</p>
+          <div>
+            <button class="modal-cancel" id="cancelar-borrar">Cancelar</button>
+            <button class="modal-confirm" id="confirmar-borrar">Sí, borrar</button>
           </div>
         </section>
       </div>
