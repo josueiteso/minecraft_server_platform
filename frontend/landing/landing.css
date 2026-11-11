@@ -667,13 +667,36 @@ h1 em, h2 em {
 
 .depth-track a.active { background: #a2db68; box-shadow: 0 0 8px rgba(162,219,104,.6); }
 
-.reveal { opacity: 0; transform: translateY(22px); transition: opacity .65s ease, transform .65s ease; }
+.reveal { opacity: 0; transform: translateY(22px); transition: opacity .65s ease var(--retraso, 0s), transform .65s ease var(--retraso, 0s); }
 
 .reveal.is-visible { opacity: 1; transform: translateY(0); }
 
-.steps-grid .reveal:nth-child(2), .plans-grid .reveal:nth-child(2), .cost-grid .reveal:nth-child(2) { transition-delay: .1s; }
+.steps-grid .reveal:nth-child(2), .plans-grid .reveal:nth-child(2), .cost-grid .reveal:nth-child(2) { --retraso: .1s; }
 
-.steps-grid .reveal:nth-child(3), .plans-grid .reveal:nth-child(3), .cost-grid .reveal:nth-child(3) { transition-delay: .2s; }
+.steps-grid .reveal:nth-child(3), .plans-grid .reveal:nth-child(3), .cost-grid .reveal:nth-child(3) { --retraso: .2s; }
+
+/* Hover: la tarjeta se levanta y su sombra crece. Se usa "translate" para no chocar con el
+   "transform" de la animacion de aparicion, y el retraso de esa animacion no aplica aqui. */
+.server-stage, .earth-card, .cost-card, .plan-card {
+  transition: opacity .65s ease var(--retraso, 0s), transform .65s ease var(--retraso, 0s), translate .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+
+.server-card, .server-info span, .server-screen button, .plan-card button { transition: translate .15s ease, box-shadow .18s ease, border-color .18s ease, background-color .15s ease; }
+
+@media (hover: hover) {
+  .server-stage:hover { translate: -4px -6px; }
+  .server-stage:hover .server-card { border-color: #0b1018; box-shadow: 16px 16px 0 rgba(5,8,13,.7), inset 0 0 0 2px #5b8f3e, 0 0 32px rgba(141,202,82,.12); }
+  .server-screen button:hover { border-color: #8dca52; background: #1f2c3f; }
+  .server-info span:hover { translate: 0 -3px; background: #233044; box-shadow: 0 3px 0 #8dca52; }
+
+  .earth-card:hover { translate: -4px -6px; border-color: #1c1411; box-shadow: inset 0 0 0 2px #b48054, 13px 13px 0 rgba(38,25,20,.7); }
+
+  .cost-card:hover { translate: -4px -6px; box-shadow: inset 0 0 0 2px #a7db75, 12px 12px 0 rgba(14,17,18,.6); }
+
+  .plan-card:hover { translate: -4px -8px; box-shadow: inset 0 0 0 2px #5f6e78, 14px 14px 0 rgba(8,11,13,.7); }
+  .plan-card.featured:hover { border-color: #d49351; box-shadow: inset 0 0 0 2px #a8743f, 14px 14px 0 rgba(8,11,13,.7), 0 0 40px rgba(212,147,81,.25); }
+  .plan-card button:hover:not(:disabled) { translate: -2px -2px; box-shadow: 6px 6px 0 #080a0c; }
+}
 
 @keyframes cloud-drift { to { translate: 70px 0; } }
 
