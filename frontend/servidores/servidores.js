@@ -93,7 +93,7 @@ function tarjetaServidor(servidor) {
         <span class="dashboard-status ${estado.clase}">${icono}${estado.texto}</span>
       </div>
       <div class="ip-copy-chip ${servidor.publicIp ? "" : "no-ip"}">${ip}</div>
-      <p class="ip-change-note">La IP cambia cada vez que se enciende</p>
+      ${servidor.publicIp ? '<p class="ip-change-note">La IP cambia cada vez que se enciende</p>' : ""}
       <dl class="server-card-meta">
         <div><dt>Instancia</dt><dd>${escapar(servidor.instanceType || "—")}</dd></div>
         <div><dt>Creado</dt><dd>${formatearFecha(servidor.createdAt)}</dd></div>
