@@ -84,7 +84,8 @@ function iniciarNuevoServidor() {
         modo,
         Number(jugadores.value),
       );
-      if (status === 200) {
+      // create_server responde 202: la instancia se sigue creando en segundo plano
+      if (status >= 200 && status < 300) {
         window.location.href = "../servidores/";
         return;
       }

@@ -154,8 +154,8 @@ async function ejemploCrear({ serverName }) {
   const creados = [{ id, nombre: serverName, creado: Date.now() }, ...leer(CLAVE_CREADOS, [])];
   sessionStorage.setItem(CLAVE_CREADOS, JSON.stringify(creados));
   return {
-    status: 200,
-    datos: { message: "Servidor EC2 en proceso de creacion.", instanceId: id, status: "creating" },
+    status: 202,
+    datos: { message: "Servidor en proceso de creacion.", instanceId: id, status: "creating" },
   };
 }
 
