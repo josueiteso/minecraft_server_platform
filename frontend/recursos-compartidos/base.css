@@ -66,8 +66,8 @@ button {
 
 .auth-heading > p:last-child,
 .servers-title > p:last-child {
-  color: #8f98a5;
-  font-size: 15px;
+  color: #c3cad2;
+  font-size: 16px;
   line-height: 1.6;
 }
 
@@ -132,7 +132,7 @@ button {
   align-items: center;
   gap: 10px;
   color: #9ed467;
-  font: 700 9px 'Silkscreen', monospace;
+  font: 700 10px 'Silkscreen', monospace;
   letter-spacing: .6px;
 }
 
@@ -154,7 +154,7 @@ button {
   background: #8dca52;
   border: 3px solid #0b0e09;
   box-shadow: inset 0 4px 0 rgba(255,255,255,.18), 5px 5px 0 #080b07;
-  font: 700 10px 'Silkscreen', monospace;
+  font: 700 12px 'Silkscreen', monospace;
 }
 
 .app-primary-button:hover:not(:disabled) { background: #a4df69; transform: translate(-1px, -1px); }
@@ -175,17 +175,17 @@ button {
   border-bottom: 2px solid #292e35;
 }
 
-.app-user { display: flex; align-items: center; gap: 12px; color: #8e98a2; font-size: 12px; }
+.app-user { display: flex; align-items: center; gap: 12px; color: #c3cad2; font-size: 14px; }
 
-.app-user > span { display: grid; place-items: center; width: 32px; height: 32px; color: #a9dc74; background: #283223; border: 2px solid #4c6835; font: 700 9px 'Silkscreen', monospace; }
+.app-user > span { display: grid; place-items: center; width: 36px; height: 36px; color: #a9dc74; background: #283223; border: 2px solid #4c6835; font: 700 11px 'Silkscreen', monospace; }
 
-.app-user b { color: #bdc4c9; }
+.app-user b { color: #eef1ee; }
 
-.app-user button { margin-left: 14px; padding: 9px 11px; color: #8f99a3; background: transparent; border: 1px solid #3d444d; font-size: 11px; }
+.app-user button { margin-left: 14px; padding: 10px 13px; color: #d5dbe0; background: transparent; border: 1px solid #56606a; font-size: 13px; }
 
 .app-user button:hover { color: #e3e6e3; border-color: #626d77; }
 
-.dashboard-status { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 6px; padding: 7px 8px; color: #929da5; background: #272d32; border: 1px solid #424a51; font-size: 8px; font-weight: 700; }
+.dashboard-status { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 7px; padding: 8px 10px; color: #c3cad2; background: #272d32; border: 1px solid #4a535b; font-size: 12px; font-weight: 700; }
 
 .dashboard-status.on { color: #9bd66a; background: #253424; border-color: #49663b; }
 
@@ -208,7 +208,7 @@ button {
 
 .success-toast span { display: grid; place-items: center; width: 22px; height: 22px; color: #152010; background: #8bcf52; font-weight: 900; }
 
-.back-link { display: inline-block; margin-bottom: 43px; color: #929ca6; text-decoration: none; font-size: 12px; font-weight: 700; }
+.back-link { display: inline-block; margin-bottom: 43px; color: #c3cad2; text-decoration: none; font-size: 15px; font-weight: 700; }
 
 .back-link:hover { color: #cdd3d7; }
 
@@ -224,7 +224,7 @@ button {
   .app-header { width: calc(100% - 32px); height: 72px; }
   .app-user b, .app-user > span { display: none; }
   .app-user button { margin-left: 0; }
-  .dashboard-status { padding: 6px; font-size: 7px; }
+  .dashboard-status { padding: 6px 8px; font-size: 11px; }
   .success-toast { top: 14px; right: 14px; left: 14px; justify-content: center; }
   .back-link { margin-bottom: 34px; }
   .creation-toast { top: 14px; right: 14px; left: 14px; max-width: none; }
