@@ -131,6 +131,7 @@ html { scroll-padding-top: 70px; }
   font: 700 10px/1.3 'Silkscreen', monospace;
   letter-spacing: .6px;
   text-transform: uppercase;
+  text-shadow: 2px 2px 0 rgba(0,0,0,.6);
 }
 
 .eyebrow > span {
@@ -394,22 +395,59 @@ h1 em, h2 em {
 
 .dirt-layer {
   min-height: 720px;
-  background-color: #785039;
-  background-image:
-    linear-gradient(90deg, transparent 0 13%, rgba(58,33,26,.22) 13% 17%, transparent 17% 39%, rgba(160,105,63,.2) 39% 45%, transparent 45%),
-    linear-gradient(transparent 0 21%, rgba(55,35,27,.18) 21% 27%, transparent 27% 74%, rgba(157,100,60,.18) 74% 81%, transparent 81%);
-  background-size: 64px 64px, 80px 80px;
+  background-color: #6a4630;
+  background-image: linear-gradient(rgba(28, 16, 9, .18), rgba(28, 16, 9, .18)), url('texturas/tierra.png');
+  background-size: auto, 512px 384px;
 }
 
-.dirt-layer::after, .stone-layer::after, .ore-layer::after {
+/* Texturas pixel propias (carpeta texturas/): mosaicos de 8x6 bloques de 16x16 con minerales,
+   escalados x4 sin suavizar para que cada bloque mida 64px */
+.dirt-layer, .stone-layer, .ore-layer, .deep-layer { image-rendering: pixelated; }
+
+/* Transicion entre capas: las primeras 3 filas de bloques de cada capa mezclan bloques
+   sueltos de la capa de arriba (mascara texturas/transicion.png), en vez de un corte recto */
+.stone-layer::before, .ore-layer::before, .deep-layer::before {
+  top: 0;
+  z-index: 1;
+  height: 192px;
+  clip-path: none;
+  background-size: 512px 384px;
+  -webkit-mask: url('texturas/transicion.png') 0 0 / 1024px 192px repeat-x;
+  mask: url('texturas/transicion.png') 0 0 / 1024px 192px repeat-x;
+}
+
+.stone-layer::before { background-image: linear-gradient(rgba(28, 16, 9, .18), rgba(28, 16, 9, .18)), url('texturas/tierra.png'); background-size: auto, 512px 384px; }
+
+.ore-layer::before { background-image: linear-gradient(rgba(14, 17, 20, .22), rgba(14, 17, 20, .22)), url('texturas/piedra.png'); background-size: auto, 512px 384px; -webkit-mask-position: -320px 0; mask-position: -320px 0; }
+
+.deep-layer::before { background-image: linear-gradient(rgba(8, 10, 13, .12), rgba(8, 10, 13, .12)), url('texturas/pizarra.png'); background-size: auto, 512px 384px; -webkit-mask-position: -640px 0; mask-position: -640px 0; }
+
+/* Destellos: capas transparentes con estrellitas sobre los minerales (A y B).
+   Primero destella el grupo A, se apaga, y luego el grupo B. */
+.stone-layer::after, .ore-layer::after, .deep-layer::after {
   content: '';
   position: absolute;
   inset: 0;
-  z-index: -1;
-  opacity: .4;
-  background:
-    linear-gradient(135deg, transparent 75%, rgba(0,0,0,.16) 75%) 0 0/32px 32px,
-    linear-gradient(45deg, rgba(255,255,255,.04) 25%, transparent 25%) 0 0/48px 48px;
+  z-index: 0;
+  pointer-events: none;
+  background-size: 512px 384px;
+  filter: drop-shadow(0 0 6px rgba(255, 255, 255, .55));
+  animation: destello-minerales 5s steps(4, jump-none) infinite;
+}
+
+.stone-layer::after { --brillo-a: url('texturas/piedra-brillo-a.png'); --brillo-b: url('texturas/piedra-brillo-b.png'); }
+
+.ore-layer::after { --brillo-a: url('texturas/pizarra-brillo-a.png'); --brillo-b: url('texturas/pizarra-brillo-b.png'); animation-delay: -1.7s; }
+
+.deep-layer::after { --brillo-a: url('texturas/roca-profunda-brillo-a.png'); --brillo-b: url('texturas/roca-profunda-brillo-b.png'); animation-delay: -3.1s; }
+
+@keyframes destello-minerales {
+  0%, 100% { opacity: 0; background-image: var(--brillo-a); }
+  20% { opacity: 1; background-image: var(--brillo-a); }
+  40% { opacity: 0; background-image: var(--brillo-a); }
+  50% { opacity: 0; background-image: var(--brillo-b); }
+  70% { opacity: 1; background-image: var(--brillo-b); }
+  90% { opacity: 0; background-image: var(--brillo-b); }
 }
 
 .section-content { padding-block: 120px; position: relative; z-index: 2; }
@@ -425,10 +463,10 @@ h1 em, h2 em {
   color: #fff;
   font: 700 clamp(28px, 3vw, 42px)/1.2 'Silkscreen', monospace;
   letter-spacing: -1.5px;
-  text-shadow: 4px 4px 0 rgba(0,0,0,.3);
+  text-shadow: 4px 4px 0 rgba(0,0,0,.55);
 }
 
-.section-header p:not(.eyebrow), .cta > p:not(.eyebrow) { color: #d7d0c7; font-size: 17px; line-height: 1.6; }
+.section-header p:not(.eyebrow), .cta > p:not(.eyebrow) { color: #efe9e1; font-size: 17px; line-height: 1.6; text-shadow: 2px 2px 0 rgba(0,0,0,.6), 0 0 12px rgba(0,0,0,.55); }
 
 .steps-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
 
@@ -479,11 +517,9 @@ h1 em, h2 em {
 
 .stone-layer {
   min-height: 690px;
-  background-color: #3d4448;
-  background-image:
-    linear-gradient(90deg, transparent 0 14%, #4b5458 14% 28%, transparent 28% 74%, #30373b 74% 82%, transparent 82%),
-    linear-gradient(transparent 0 35%, rgba(25,29,31,.24) 35% 44%, transparent 44%);
-  background-size: 72px 64px, 56px 72px;
+  background-color: #51575b;
+  background-image: linear-gradient(rgba(14, 17, 20, .22), rgba(14, 17, 20, .22)), url('texturas/piedra.png');
+  background-size: auto, 512px 384px;
 }
 
 .stone-layer .eyebrow { color: #d2be84; }
@@ -539,11 +575,9 @@ h1 em, h2 em {
 
 .ore-layer {
   min-height: 960px;
-  background-color: #252c33;
-  background-image:
-    linear-gradient(90deg, transparent 0 20%, rgba(79,90,98,.25) 20% 27%, transparent 27% 63%, rgba(15,20,24,.28) 63% 72%, transparent 72%),
-    linear-gradient(transparent 0 28%, rgba(79,90,98,.18) 28% 35%, transparent 35% 79%, rgba(16,21,25,.2) 79%);
-  background-size: 70px 70px, 90px 76px;
+  background-color: #2b3136;
+  background-image: linear-gradient(rgba(8, 10, 13, .12), rgba(8, 10, 13, .12)), url('texturas/pizarra.png');
+  background-size: auto, 512px 384px;
 }
 
 .plans-grid { display: grid; grid-template-columns: repeat(3, 1fr); align-items: center; gap: 22px; }
@@ -635,11 +669,9 @@ h1 em, h2 em {
 .deep-layer {
   min-height: 690px;
   padding-top: 70px;
-  background-color: #090d15;
-  background-image:
-    linear-gradient(90deg, transparent 0 18%, rgba(34,42,53,.3) 18% 27%, transparent 27% 70%, rgba(23,30,39,.3) 70% 79%, transparent 79%),
-    linear-gradient(transparent 0 37%, rgba(26,34,43,.28) 37% 48%, transparent 48%);
-  background-size: 84px 72px, 70px 94px;
+  background-color: #101317;
+  background-image: linear-gradient(rgba(5, 7, 10, .3), rgba(5, 7, 10, .3)), url('texturas/roca-profunda.png');
+  background-size: auto, 512px 384px;
 }
 
 .cta { padding: 105px 24px 120px; text-align: center; }
