@@ -185,13 +185,15 @@ h1 em, h2 em {
   display: flex;
   gap: 28px;
   margin-top: 24px;
-  color: #9da9ba;
-  font-size: 12px;
+  color: #dbe3ee;
+  font-size: 14px;
+  font-weight: 600;
+  text-shadow: 1px 1px 0 rgba(4, 8, 17, .6);
 }
 
 .trust-row span { display: flex; align-items: center; gap: 8px; }
 
-.trust-row span + span::before { content: '◆'; color: #60708c; font-size: 8px; margin-right: 12px; }
+.trust-row span + span::before { content: '◆'; color: #a3db6d; font-size: 8px; margin-right: 12px; }
 
 .status-light { width: 7px; height: 7px; background: #8bd553; box-shadow: 0 0 9px #8bd553; }
 
@@ -508,19 +510,31 @@ h1 em, h2 em {
 
 .cost-card h3 { color: #f3f1e9; font: 700 12px 'Silkscreen', monospace; }
 
-.cost-card p { margin-top: 7px; color: #929da3; font-size: 12px; }
+.cost-card p { margin-top: 7px; color: #c3cbcf; font-size: 13px; }
 
-.cost-card .hours { color: #879096; font: 700 9px 'Silkscreen', monospace; }
+.cost-card .hours { color: #d2be84; font: 700 11px 'Silkscreen', monospace; }
 
 .cost-card strong { grid-column: 2 / 4; color: #a7db75; font: 700 23px 'Silkscreen', monospace; }
 
-.cost-card strong small { font-size: 8px; color: #8b979d; }
+.cost-card strong small { margin-left: 4px; font: 700 11px 'DM Sans', sans-serif; color: #cfd6d9; }
 
 .off-card strong { color: #7fcb90; }
 
 .off-card .cost-icon { color: #777f84; }
 
-.estimate-note { margin-top: 30px; color: #aab1b3; text-align: center; font-size: 12px; }
+/* notas al pie de precios y planes: recuadro oscuro para que se lean sobre la piedra */
+.estimate-note, .billing-note {
+  display: table;
+  margin: 34px auto 0;
+  padding: 11px 18px;
+  color: #eef2f4;
+  background: rgba(12, 15, 18, .72);
+  border: 2px solid #0a0d0f;
+  box-shadow: inset 0 0 0 1px #4a545a, 4px 4px 0 rgba(0,0,0,.35);
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+}
 
 .ore-layer {
   min-height: 960px;
@@ -573,19 +587,19 @@ h1 em, h2 em {
 
 .plan-card h3 { color: #f1efe5; font: 700 20px 'Silkscreen', monospace; }
 
-.plan-description { margin: 10px 0 22px; color: #909ca4; font-size: 13px; }
+.plan-description { margin: 10px 0 22px; color: #c2cbd1; font-size: 14px; }
 
 .price { display: flex; align-items: center; gap: 10px; padding-bottom: 24px; border-bottom: 1px solid #354049; }
 
 .price strong { color: #fff; font: 700 28px 'Silkscreen', monospace; }
 
-.price span { color: #7f8b93; font-size: 9px; line-height: 1.4; }
+.price span { color: #d3dade; font-size: 12px; font-weight: 700; line-height: 1.35; }
 
 .plan-card ul { list-style: none; margin: 20px 0 28px; padding: 0; }
 
-.plan-card li { display: flex; justify-content: space-between; gap: 15px; padding: 10px 0; color: #8e9aa2; font-size: 12px; }
+.plan-card li { display: flex; justify-content: space-between; gap: 15px; padding: 10px 0; color: #b4bec5; font-size: 13px; }
 
-.plan-card li b { color: #d8dcdd; }
+.plan-card li b { color: #f1f3f2; }
 
 .plan-card button {
   width: 100%; min-height: 48px;
@@ -598,7 +612,6 @@ h1 em, h2 em {
 
 .plan-card button:disabled { cursor: not-allowed; color: #697278; background: #2b3338; }
 
-.billing-note { margin-top: 44px; color: #a6b0b6; text-align: center; font-size: 12px; }
 
 .billing-note span { color: #d49351; margin-right: 8px; }
 
@@ -785,7 +798,7 @@ h1 em, h2 em {
   .hero-content { padding-top: 36px; align-items: start; gap: 58px; }
   .hero-copy h1 { margin-block: 20px; font-size: 31px; line-height: 1.23; letter-spacing: -1.5px; }
   .hero-subtitle { font-size: 16px; line-height: 1.55; }
-  .trust-row { gap: 12px; font-size: 10px; }
+  .trust-row { gap: 10px; font-size: 12px; }
   .trust-row span + span::before { margin-right: 4px; }
   .server-card { padding: 18px 14px; }
   .card-top { align-items: flex-start; }
