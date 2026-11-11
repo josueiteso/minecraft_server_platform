@@ -386,7 +386,8 @@
   background-size: auto, 512px 384px;
 }
 
-.cta { padding: 105px 24px 120px; text-align: center; }
+/* encima de la franja de transicion de bloques (z-index 1), igual que .section-content */
+.cta { position: relative; z-index: 2; padding: 105px 24px 120px; text-align: center; }
 
 .cta > .pixel-block { width: 42px; height: 42px; margin-bottom: 30px; }
 
