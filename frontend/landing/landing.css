@@ -681,26 +681,51 @@ h1 em, h2 em {
 
 .cta > p:not(.eyebrow) { margin-bottom: 34px; }
 
+/* Footer: barra solida a todo lo ancho (como el navbar) para que no se pierda sobre la textura */
 .footer {
-  min-height: 116px;
+  position: relative;
+  z-index: 3;
+  min-height: 96px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-top: 2px solid #202835;
-  color: #6f7b8a;
+  color: #aeb8c4;
 }
 
-.footer-brand { opacity: .8; font-size: 16px; }
+.footer::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 100vw;
+  translate: -50% 0;
+  background: #0e1323;
+  border-top: 3px solid #070a12;
+  box-shadow: 0 -4px 0 rgba(5, 8, 15, .35);
+}
+
+.footer-brand { font-size: 16px; }
 
 .footer-brand .pixel-block { width: 24px; height: 24px; }
 
-.footer > div { display: flex; gap: 26px; }
+.footer > div { display: flex; gap: 10px; }
 
-.footer a:not(.brand), .footer button { color: #8893a1; background: none; border: 0; text-decoration: none; font-size: 12px; }
+.footer a:not(.brand), .footer button {
+  padding: 8px 10px;
+  color: #e6ebf2;
+  background: none;
+  border: 0;
+  text-decoration: none;
+  font: 700 10px 'Silkscreen', monospace;
+  letter-spacing: .3px;
+  transition: color .15s ease, background-color .15s ease;
+}
 
-.footer a:hover, .footer button:hover { color: #dce2e8; }
+.footer a:not(.brand):hover, .footer button:hover { color: #10190c; background: #a3db6d; }
 
-.footer > p { font: 400 9px 'Silkscreen', monospace; }
+.footer > p { color: #aeb8c4; font: 700 10px 'Silkscreen', monospace; }
 
 .crystals i { position: absolute; bottom: 80px; width: 18px; height: 46px; background: #3ca7ab; clip-path: polygon(50% 0, 100% 32%, 79% 100%, 18% 100%, 0 31%); box-shadow: 0 0 26px #41bfc0; opacity: .55; }
 
