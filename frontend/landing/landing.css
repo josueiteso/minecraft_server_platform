@@ -11,8 +11,11 @@
   overflow: hidden;
 }
 
+/* las anclas del menu no quedan escondidas debajo del navbar fijo */
+html { scroll-padding-top: 70px; }
+
 .hero-layer {
-  min-height: 860px;
+  min-height: 794px;
   background:
     linear-gradient(180deg, rgba(93, 84, 151, .12), transparent 44%),
     linear-gradient(180deg, #11172b 0%, #19243c 50%, #263759 100%);
@@ -30,13 +33,23 @@
   background-size: 16px 16px;
 }
 
+/* Navbar fijo arriba con fondo propio para que no se pierda al bajar */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: rgba(14, 19, 35, .94);
+  border-bottom: 3px solid #070a12;
+  box-shadow: 0 4px 0 rgba(5, 8, 15, .35);
+  backdrop-filter: blur(4px);
+}
+
 .nav {
-  height: 88px;
+  height: 66px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  position: relative;
-  z-index: 10;
+  gap: 20px;
 }
 
 .brand {
@@ -45,38 +58,58 @@
   gap: 12px;
   color: #fff;
   text-decoration: none;
-  font: 700 23px/1 'Silkscreen', monospace;
+  font: 700 21px/1 'Silkscreen', monospace;
   letter-spacing: -1px;
 }
+
+.nav .pixel-block { width: 26px; height: 26px; }
 
 .nav-links, .nav-actions {
   display: flex;
   align-items: center;
-  gap: 32px;
+  gap: 10px;
+}
+
+/* cada opcion del menu es un boton de bloque */
+.nav-links a, .text-button, .mini-button {
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
+  padding: 0 14px;
+  border: 2px solid #070a12;
+  box-shadow: 3px 3px 0 #070a12;
+  text-decoration: none;
+  white-space: nowrap;
+  font: 700 11px 'Silkscreen', monospace;
+  letter-spacing: .3px;
+  transition: translate .15s ease, box-shadow .15s ease, background-color .15s ease, color .15s ease;
 }
 
 .nav-links a, .text-button {
-  color: #cdd3df;
-  font-size: 14px;
-  font-weight: 600;
-  text-decoration: none;
-  transition: color .2s;
+  color: #f1f4f8;
+  background: #243052;
+  box-shadow: 3px 3px 0 #070a12, inset 0 0 0 1px #3f4f78;
+  text-shadow: 1px 1px 0 #070a12;
 }
 
-.nav-links a:hover, .text-button:hover { color: #fff; }
-
-.text-button { background: none; border: 0; }
+.nav-links a.active {
+  color: #10190c;
+  background: #a3db6d;
+  box-shadow: 3px 3px 0 #070a12, inset 0 2px 0 rgba(255,255,255,.25);
+}
 
 .mini-button {
-  border: 2px solid #8fca55;
-  background: #77ad46;
   color: #10190c;
-  padding: 10px 16px;
-  box-shadow: 3px 3px 0 #10190c;
-  font: 700 11px 'Silkscreen', monospace;
+  background: #8dca52;
+  box-shadow: 3px 3px 0 #070a12, inset 0 3px 0 rgba(255,255,255,.2);
 }
 
-.mini-button:hover { background: #96d45b; transform: translate(-1px, -1px); }
+@media (hover: hover) {
+  .nav-links a:hover, .text-button:hover, .mini-button:hover { translate: -2px -2px; }
+  .nav-links a:not(.active):hover, .text-button:hover { color: #fff; background: #2e3d66; box-shadow: 5px 5px 0 #070a12, inset 0 0 0 1px #8dca52; }
+  .nav-links a.active:hover { box-shadow: 5px 5px 0 #070a12, inset 0 2px 0 rgba(255,255,255,.25); }
+  .mini-button:hover { background: #a4df69; box-shadow: 5px 5px 0 #070a12, inset 0 3px 0 rgba(255,255,255,.2); }
+}
 
 .hero-content {
   min-height: 680px;
@@ -705,7 +738,11 @@ h1 em, h2 em {
 @keyframes sparkle { 50% { opacity: .35; filter: brightness(.7); } }
 
 @media (max-width: 900px) {
-  .nav-links { display: none; }
+  html { scroll-padding-top: 108px; }
+  /* las secciones pasan a una segunda fila del navbar */
+  .nav { height: auto; flex-wrap: wrap; row-gap: 12px; padding-block: 14px; }
+  .nav-links { order: 3; width: 100%; justify-content: center; gap: 8px; }
+  .nav-links a { min-height: 32px; padding: 0 10px; font-size: 8px; }
   .hero-content { grid-template-columns: 1fr; gap: 58px; padding-top: 65px; padding-bottom: 130px; }
   .hero-copy { text-align: center; }
   .hero-copy .eyebrow, .trust-row { justify-content: center; }
@@ -720,12 +757,12 @@ h1 em, h2 em {
 
 @media (max-width: 600px) {
   .shell { width: min(100% - 32px, 500px); }
-  .hero-layer { min-height: 1050px; }
-  .nav { height: 72px; }
-  .brand { font-size: 18px; gap: 8px; }
-  .nav .pixel-block { width: 26px; height: 26px; }
-  .nav-actions .text-button { display: none; }
-  .mini-button { padding: 9px 11px; font-size: 8px; }
+  .hero-layer { min-height: 978px; }
+  .nav { padding-block: 12px; }
+  .brand { font-size: 16px; gap: 8px; }
+  .nav .pixel-block { width: 24px; height: 24px; }
+  .nav-actions { gap: 8px; }
+  .text-button, .mini-button { min-height: 32px; padding: 0 9px; font-size: 8px; }
   .hero-content { padding-top: 36px; align-items: start; gap: 58px; }
   .hero-copy h1 { margin-block: 20px; font-size: 31px; line-height: 1.23; letter-spacing: -1.5px; }
   .hero-subtitle { font-size: 16px; line-height: 1.55; }
