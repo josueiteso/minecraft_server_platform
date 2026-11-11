@@ -91,7 +91,7 @@ function iniciarDetalle() {
 
     const ip = servidor.publicIp;
     $("panel-ip").classList.toggle("without-ip", !ip);
-    $("ip").textContent = ip || "Sin IP · se asigna al encender";
+    $("ip").textContent = ip ? servidor.address || ip : "Sin IP · se asigna al encender";
     $("ip-ayuda").hidden = !ip;
     $("copiar-ip").hidden = !ip;
 

@@ -77,7 +77,7 @@ function tarjetaServidor(servidor) {
     : '<i class="status-dot" aria-hidden="true"></i>';
   const ip = servidor.publicIp
     ? `<button data-copiar="${escapar(servidor.address)}" aria-label="Copiar IP de ${escapar(servidor.serverName)}">
-         <code>${escapar(servidor.publicIp)}</code><b>Copiar</b>
+         <code>${escapar(servidor.address || servidor.publicIp)}</code><b>Copiar</b>
        </button>`
     : "<span>Sin IP · se asigna al encender</span>";
 
