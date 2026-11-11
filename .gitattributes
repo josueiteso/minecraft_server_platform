@@ -1,0 +1,2 @@
+# los scripts de bash siempre con finales de linea de Linux, aunque se clone en Windows
+*.sh text eol=lf
