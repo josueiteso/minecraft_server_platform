@@ -78,10 +78,6 @@
 
 .detail-info-icon i { width: 13px; height: 13px; background: #7f8b92; }
 
-.detail-info-icon.state i { background: #89ca52; box-shadow: 0 0 6px rgba(137,202,82,.35); }
-
-.detail-info-icon.address i { width: 18px; height: 7px; background: #69a8b0; box-shadow: 0 9px 0 #436e77; }
-
 .detail-info-icon.instance i { width: 21px; height: 17px; background: repeating-linear-gradient(0deg,#7d8990 0 3px,#30383e 3px 5px); }
 
 .detail-info-icon.date i { width: 20px; height: 19px; border-top: 5px solid #b27e4b; background: #6f7880; }
@@ -106,10 +102,6 @@
 
 .modal-confirm { color: #f6d7cf; background: #9e443b; }
 
-@media (max-width: 800px) {
-  .detail-info-grid { grid-template-columns: repeat(2,1fr); }
-}
-
 @media (max-width: 560px) {
   .server-detail-page { width: calc(100% - 32px); padding-top: 38px; }
   .server-detail-page.full-detail { width: calc(100% - 32px); padding-top: 34px; }
@@ -121,8 +113,8 @@
   .detail-ip-panel { grid-template-columns: auto 1fr; gap: 15px; padding: 19px 15px; }
   .detail-ip-icon { width: 46px; height: 46px; }
   .detail-ip-panel > button { grid-column: 1 / -1; justify-content: center; width: 100%; }
-  .detail-info-grid { grid-template-columns: 1fr; }
-  .detail-info-card { min-height: 88px; }
+  .detail-info-grid { grid-template-columns: 1fr; gap: 10px; }
+  .detail-info-card { min-height: 0; padding: 14px 16px; }
   .pixel-modal { padding: 25px 20px; }
   .pixel-modal > div { display: grid; grid-template-columns: 1fr 1fr; }
 }

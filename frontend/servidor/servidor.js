@@ -95,8 +95,6 @@ function iniciarDetalle() {
     $("ip-ayuda").hidden = !ip;
     $("copiar-ip").hidden = !ip;
 
-    $("info-estado").textContent = texto;
-    $("info-ip").textContent = ip || "Sin IP";
     $("info-instancia").textContent = servidor.instanceType || "—";
     $("info-fecha").textContent = formatearFecha(servidor.createdAt);
     $("info-respaldo").textContent = ultimoRespaldo();
