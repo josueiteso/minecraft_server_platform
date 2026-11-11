@@ -1,0 +1,395 @@
+/* Pagina de inicio (2 de 3): capas de bloques, texturas, titulos y tarjetas de pasos, costos y planes. */
+
+.jagged-top::before {
+  content: '';
+  position: absolute;
+  z-index: 5;
+  top: -1px;
+  left: 0;
+  width: 100%;
+  height: 20px;
+  background: inherit;
+  clip-path: polygon(0 0, 4% 0, 4% 35%, 9% 35%, 9% 65%, 15% 65%, 15% 15%, 23% 15%, 23% 45%, 32% 45%, 32% 0, 41% 0, 41% 70%, 48% 70%, 48% 35%, 56% 35%, 56% 10%, 65% 10%, 65% 55%, 74% 55%, 74% 25%, 83% 25%, 83% 70%, 91% 70%, 91% 30%, 96% 30%, 96% 0, 100% 0, 100% 100%, 0 100%);
+}
+
+.dirt-layer {
+  min-height: 720px;
+  background-color: #6a4630;
+  background-image: linear-gradient(rgba(28, 16, 9, .18), rgba(28, 16, 9, .18)), url('texturas/tierra.png');
+  background-size: auto, 512px 384px;
+}
+
+/* Texturas pixel propias (carpeta texturas/): mosaicos de 8x6 bloques de 16x16 con minerales,
+   escalados x4 sin suavizar para que cada bloque mida 64px */
+.dirt-layer, .stone-layer, .ore-layer, .deep-layer { image-rendering: pixelated; }
+
+/* Transicion entre capas: las primeras 3 filas de bloques de cada capa mezclan bloques
+   sueltos de la capa de arriba (mascara texturas/transicion.png), en vez de un corte recto */
+.stone-layer::before, .ore-layer::before, .deep-layer::before {
+  top: 0;
+  z-index: 1;
+  height: 192px;
+  clip-path: none;
+  background-size: 512px 384px;
+  -webkit-mask: url('texturas/transicion.png') 0 0 / 1024px 192px repeat-x;
+  mask: url('texturas/transicion.png') 0 0 / 1024px 192px repeat-x;
+}
+
+.stone-layer::before { background-image: linear-gradient(rgba(28, 16, 9, .18), rgba(28, 16, 9, .18)), url('texturas/tierra.png'); background-size: auto, 512px 384px; }
+
+.ore-layer::before { background-image: linear-gradient(rgba(14, 17, 20, .22), rgba(14, 17, 20, .22)), url('texturas/piedra.png'); background-size: auto, 512px 384px; -webkit-mask-position: -320px 0; mask-position: -320px 0; }
+
+.deep-layer::before { background-image: linear-gradient(rgba(8, 10, 13, .12), rgba(8, 10, 13, .12)), url('texturas/pizarra.png'); background-size: auto, 512px 384px; -webkit-mask-position: -640px 0; mask-position: -640px 0; }
+
+/* Destellos: capas transparentes con estrellitas sobre los minerales (A y B).
+   Primero destella el grupo A, se apaga, y luego el grupo B. */
+.stone-layer::after, .ore-layer::after, .deep-layer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-size: 512px 384px;
+  filter: drop-shadow(0 0 6px rgba(255, 255, 255, .55));
+  animation: destello-minerales 5s steps(4, jump-none) infinite;
+}
+
+.stone-layer::after { --brillo-a: url('texturas/piedra-brillo-a.png'); --brillo-b: url('texturas/piedra-brillo-b.png'); }
+
+.ore-layer::after { --brillo-a: url('texturas/pizarra-brillo-a.png'); --brillo-b: url('texturas/pizarra-brillo-b.png'); animation-delay: -1.7s; }
+
+.deep-layer::after { --brillo-a: url('texturas/roca-profunda-brillo-a.png'); --brillo-b: url('texturas/roca-profunda-brillo-b.png'); animation-delay: -3.1s; }
+
+@keyframes destello-minerales {
+  0%, 100% { opacity: 0; background-image: var(--brillo-a); }
+  20% { opacity: 1; background-image: var(--brillo-a); }
+  40% { opacity: 0; background-image: var(--brillo-a); }
+  50% { opacity: 0; background-image: var(--brillo-b); }
+  70% { opacity: 1; background-image: var(--brillo-b); }
+  90% { opacity: 0; background-image: var(--brillo-b); }
+}
+
+.section-content { padding-block: 120px; position: relative; z-index: 2; }
+
+/* Paneles claros estilo menu del juego: gris claro con bisel blanco arriba-izquierda
+   y gris oscuro abajo-derecha, texto oscuro. Se usan en placas de titulos y costos. */
+.section-header, .cost-card {
+  color: var(--gui-texto);
+  background: var(--gui);
+  border: 3px solid #1b1b1b;
+  box-shadow: inset 3px 3px 0 var(--gui-luz), inset -3px -3px 0 var(--gui-sombra), 7px 7px 0 rgba(0, 0, 0, .38);
+}
+
+/* placa de titulo: ancha y de poca altura para que el titulo quepa en una linea */
+.section-header {
+  --gui: #b4b4b4;
+  --gui-luz: #e2e2e2;
+  --gui-sombra: #4f4f4f;
+  width: fit-content;
+  max-width: 100%;
+  margin-bottom: 48px;
+  padding: 22px 34px 24px;
+}
+
+.section-header .eyebrow, .stone-layer .section-header .eyebrow { color: #2f7a16; text-shadow: none; }
+
+.section-header h2 {
+  margin: 12px 0 8px;
+  color: var(--gui-texto-oscuro);
+  font: 700 clamp(28px, 3vw, 42px)/1.2 var(--fuente-pixel);
+  letter-spacing: -1.5px;
+  text-shadow: 3px 3px 0 rgba(0, 0, 0, .18);
+}
+
+.section-header h2 em { color: #3a8a1e; }
+
+.section-header p:not(.eyebrow) { color: #3f3f3f; font-size: 17px; font-weight: 600; line-height: 1.6; }
+
+.cta h2 {
+  margin: 16px 0;
+  color: #fff;
+  font: 700 clamp(28px, 3vw, 42px)/1.2 var(--fuente-pixel);
+  letter-spacing: -1.5px;
+  text-shadow: 4px 4px 0 rgba(0,0,0,.55);
+}
+
+.cta > p:not(.eyebrow) { color: #efe9e1; font-size: 17px; line-height: 1.6; text-shadow: 2px 2px 0 rgba(0,0,0,.6), 0 0 12px rgba(0,0,0,.55); }
+
+/* Ranura de inventario con un objeto pixel (iconos/*.png) */
+.item-slot {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  background: #8b8b8b;
+  box-shadow: inset 3px 3px 0 #373737, inset -3px -3px 0 #ffffff;
+}
+
+.item {
+  display: block;
+  width: 48px;
+  height: 48px;
+  background: center / 100% 100% no-repeat;
+  image-rendering: pixelated;
+  filter: drop-shadow(2px 2px 0 rgba(0, 0, 0, .35));
+  transition: translate .18s ease;
+}
+
+.item.libro { background-image: url('iconos/libro.png'); }
+.item.pico { background-image: url('iconos/pico.png'); }
+.item.mapa { background-image: url('iconos/mapa.png'); }
+.item.reloj { background-image: url('iconos/reloj.png'); }
+.item.cama { background-image: url('iconos/cama.png'); }
+.item.lampara { background-image: url('iconos/lampara.png'); }
+.item.bloque-piedra { background-image: url('iconos/bloque-piedra.png'); }
+.item.bloque-hierro { background-image: url('iconos/bloque-hierro.png'); }
+.item.bloque-diamante { background-image: url('iconos/bloque-diamante.png'); }
+
+.steps-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+
+/* tarjetas de pasos: franja de tablones arriba con el icono montado en el borde,
+   cuerpo liso tipo pergamino para que el texto se lea limpio */
+.earth-card {
+  position: relative;
+  padding: 0 0 28px;
+  color: var(--madera-oscura);
+  text-align: center;
+  background: #f1e4c6;
+  border: 3px solid var(--madera-oscura);
+  box-shadow: inset 0 -5px 0 #d9c497, 7px 7px 0 rgba(20, 12, 8, .55);
+}
+
+.step-top {
+  position: relative;
+  height: 86px;
+  margin-bottom: 52px;
+  background: url('texturas/madera.png') 0 0 / 64px 64px;
+  image-rendering: pixelated;
+  border-bottom: 3px solid var(--madera-oscura);
+  box-shadow: inset 0 3px 0 rgba(255, 228, 180, .45), inset 0 -4px 0 rgba(60, 34, 14, .45);
+}
+
+.step-top .item-slot {
+  position: absolute;
+  left: 50%;
+  bottom: -42px;
+  width: 80px;
+  height: 80px;
+  translate: -50% 0;
+  border: 3px solid var(--madera-oscura);
+}
+
+.step-top .item { width: 60px; height: 60px; }
+
+.step-number {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  padding: 7px 10px;
+  color: #ffe08a;
+  background: var(--madera-oscura);
+  border: 2px solid #120a04;
+  box-shadow: inset 0 0 0 1px #7a5232, 3px 3px 0 rgba(0, 0, 0, .35);
+  font: 700 11px var(--fuente-pixel);
+}
+
+.earth-card h3 { margin: 0 20px 10px; color: var(--madera-oscura); font: 700 18px var(--fuente-pixel); }
+
+.earth-card p { margin: 0 24px; color: #4a3420; font-size: 16px; font-weight: 600; line-height: 1.55; }
+
+/* flecha pixel entre un paso y el siguiente (solo cuando estan en fila) */
+@media (min-width: 901px) {
+  .steps-grid .earth-card:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    z-index: 3;
+    top: 50%;
+    right: -25px;
+    width: 0;
+    height: 0;
+    border-top: 12px solid transparent;
+    border-bottom: 12px solid transparent;
+    border-left: 15px solid #ffe08a;
+    translate: 0 -50%;
+    filter: drop-shadow(3px 3px 0 var(--madera-oscura));
+  }
+}
+
+.roots i { position: absolute; z-index: 1; top: 25px; width: 3px; height: 90px; background: #3a281e; transform: rotate(13deg); }
+
+.roots i::after { content: ''; position: absolute; left: -13px; bottom: 10px; width: 16px; height: 3px; background: #3a281e; transform: rotate(30deg); }
+
+.roots i:nth-child(1) { left: 8%; }
+
+.roots i:nth-child(2) { right: 16%; height: 130px; }
+
+.roots i:nth-child(3) { left: 48%; top: 4px; height: 52px; }
+
+.stone-layer {
+  min-height: 690px;
+  background-color: #51575b;
+  background-image: linear-gradient(rgba(14, 17, 20, .22), rgba(14, 17, 20, .22)), url('texturas/piedra.png');
+  background-size: auto, 512px 384px;
+}
+
+/* precios: el contenido baja para librar los bloques de tierra de la transicion de arriba
+   y queda centrado en la parte gris (la piedra tambien se mete un poco en la seccion de abajo) */
+.stone-layer .section-content { padding-top: 205px; padding-bottom: 95px; }
+
+.cost-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+
+.cost-card {
+  display: grid;
+  grid-template-columns: 64px 1fr auto;
+  align-items: center;
+  column-gap: 16px;
+  row-gap: 6px;
+  padding: 20px;
+}
+
+.cost-slot { grid-row: span 2; }
+
+.cost-card h3 { color: var(--gui-texto-oscuro); font: 700 14px var(--fuente-pixel); }
+
+.cost-card p { margin-top: 6px; color: #4a4a4a; font-size: 15px; font-weight: 600; }
+
+.cost-card .hours { color: #7a5a14; font: 700 12px var(--fuente-pixel); }
+
+.cost-card strong { grid-column: 2 / 4; color: #2e7d1a; font: 700 26px var(--fuente-pixel); }
+
+.cost-card strong small { margin-left: 4px; font: 700 12px 'DM Sans', sans-serif; color: #4a4a4a; }
+
+.off-card strong { color: #3c7d4f; }
+
+/* notas al pie de precios y planes: recuadro oscuro para que se lean sobre la piedra */
+.estimate-note, .billing-note {
+  display: table;
+  margin: 34px auto 0;
+  padding: 11px 18px;
+  color: #eef2f4;
+  background: rgba(12, 15, 18, .72);
+  border: 2px solid #0a0d0f;
+  box-shadow: inset 0 0 0 1px #4a545a, 4px 4px 0 rgba(0,0,0,.35);
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.ore-layer {
+  min-height: 960px;
+  background-color: #2b3136;
+  background-image: linear-gradient(rgba(8, 10, 13, .12), rgba(8, 10, 13, .12)), url('texturas/pizarra.png');
+  background-size: auto, 512px 384px;
+}
+
+.plans-grid { display: grid; grid-template-columns: repeat(3, 1fr); align-items: center; gap: 22px; }
+
+.plan-card {
+  position: relative;
+  min-height: 500px;
+  padding: 32px;
+  background: linear-gradient(180deg, #1d242b, #151a1f);
+  border: 3px solid #0c1013;
+  box-shadow: inset 0 0 0 2px #38424a, 8px 8px 0 rgba(8,11,13,.65);
+}
+
+/* franja de color del mineral arriba de cada plan */
+.plan-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: var(--color-plan);
+  opacity: .85;
+}
+
+/* en los planes la ranura del icono es oscura */
+.plan-card .item-slot {
+  margin-bottom: 22px;
+  background: #1b1f23;
+  border: 3px solid #0a0c0e;
+  box-shadow: inset 3px 3px 0 #0d0f12, inset -3px -3px 0 #3d454c, 4px 4px 0 rgba(0, 0, 0, .4);
+}
+
+.plan-card.featured { min-height: 540px; padding-top: 47px; border-color: #af7845; box-shadow: inset 0 0 0 2px #715134, 8px 8px 0 rgba(8,11,13,.65), 0 0 28px rgba(192,125,62,.12); }
+
+.plan-tag {
+  position: absolute; top: -14px; right: 18px;
+  padding: 8px 10px;
+  color: #9da8ae; background: #343d43; border: 2px solid #0c1013;
+  font: 700 8px var(--fuente-pixel);
+}
+
+.featured .plan-tag { color: #23170e; background: #d49351; }
+
+.plan-card h3 { color: #f1efe5; font: 700 20px var(--fuente-pixel); }
+
+.plan-description { margin: 10px 0 22px; color: #c2cbd1; font-size: 14px; }
+
+.price { display: flex; align-items: center; gap: 10px; padding-bottom: 24px; border-bottom: 1px solid #354049; }
+
+.price strong { color: #fff; font: 700 28px var(--fuente-pixel); }
+
+.price span { color: #d3dade; font-size: 12px; font-weight: 700; line-height: 1.35; }
+
+.plan-card ul { list-style: none; margin: 20px 0 28px; padding: 0; }
+
+.plan-card li { display: flex; justify-content: space-between; gap: 15px; padding: 10px 0; color: #b4bec5; font-size: 13px; }
+
+.plan-card li b { color: #f1f3f2; white-space: nowrap; }
+
+.plan-card button {
+  width: 100%; min-height: 48px;
+  color: #171009; background: #cc8948;
+  border: 3px solid #090c0e; box-shadow: 4px 4px 0 #080a0c;
+  font: 700 10px var(--fuente-pixel);
+}
+
+.plan-card button:hover:not(:disabled) { background: #e2a15d; }
+
+.plan-card button:disabled { cursor: not-allowed; color: #697278; background: #2b3338; }
+
+/* los planes que no son el recomendado llevan boton secundario */
+.plan-card:not(.featured) button { color: #e3e7e4; background: #3a434a; }
+
+.plan-card:not(.featured) button:hover { background: #4a545c; }
+
+
+.billing-note span { color: #d49351; margin-right: 8px; }
+
+.ore-specks i { position: absolute; z-index: 0; width: 8px; height: 8px; background: #cf8950; box-shadow: 12px 8px 0 #9c623b, 0 0 10px rgba(214,139,76,.25); animation: sparkle 3s steps(2) infinite; }
+
+.ore-left i:nth-child(1) { left: 5%; top: 18%; }
+
+.ore-left i:nth-child(2) { left: 11%; top: 68%; animation-delay: -.8s; }
+
+.ore-left i:nth-child(3) { left: 2%; top: 82%; background: #47c7d0; }
+
+.ore-left i:nth-child(4) { left: 17%; top: 38%; background: #858e93; }
+
+.ore-right i:nth-child(1) { right: 6%; top: 27%; background: #46cbd3; }
+
+.ore-right i:nth-child(2) { right: 13%; top: 72%; animation-delay: -1.3s; }
+
+.ore-right i:nth-child(3) { right: 2%; top: 52%; background: #929b9e; }
+
+.deep-layer {
+  min-height: 690px;
+  padding-top: 70px;
+  background-color: #101317;
+  background-image: linear-gradient(rgba(5, 7, 10, .3), rgba(5, 7, 10, .3)), url('texturas/roca-profunda.png');
+  background-size: auto, 512px 384px;
+}
+
+/* encima de la franja de transicion de bloques (z-index 1), igual que .section-content */
+.cta { position: relative; z-index: 2; padding: 105px 24px 120px; text-align: center; }
+
+.cta > .pixel-block { width: 42px; height: 42px; margin-bottom: 30px; }
+
+.cta .eyebrow { justify-content: center; }
+
+.cta h2 { max-width: 760px; margin: 20px auto; font-size: clamp(30px, 4vw, 52px); }
+
+.cta > p:not(.eyebrow) { margin-bottom: 34px; }

@@ -164,7 +164,7 @@ Al crear un servidor con `create_server` usando el mismo `userId` (ver el README
 
 Codigo: [`frontend/`](frontend/)
 
-Sitio estatico en HTML, CSS y JavaScript sin framework. Cada pantalla tiene su carpeta (`landing/`, `login/`, `registro/`, `servidores/`, `nuevo-servidor/`, `servidor/`) con su HTML, CSS y JS, y lo compartido esta en [`frontend/recursos-compartidos/`](frontend/recursos-compartidos/). La URL del API Gateway va en [`frontend/recursos-compartidos/config.js`](frontend/recursos-compartidos/config.js); mientras esta vacia, el frontend usa datos de ejemplo.
+Sitio estatico en HTML, CSS y JavaScript sin framework. La pagina de inicio es `frontend/index.html` (sus estilos, script e imagenes estan en `landing/`) para que se abra en la raiz del sitio sin `/landing/` en la URL. Las demas pantallas tienen su carpeta (`login/`, `registro/`, `servidores/`, `nuevo-servidor/`, `servidor/`) con su HTML, CSS y JS, y lo compartido esta en [`frontend/recursos-compartidos/`](frontend/recursos-compartidos/). La URL del API Gateway va en [`frontend/recursos-compartidos/config.js`](frontend/recursos-compartidos/config.js); mientras esta vacia, el frontend usa datos de ejemplo.
 
 Para probarlo en local, desde la raiz del repositorio:
 
@@ -184,6 +184,7 @@ El API Gateway (`minecraft-servers-api`, HTTP API con CORS) lo crea `create_serv
 | `POST /register` | `register_user` |
 | `POST /login` | `login_user` |
 | `GET /servers?userId=` | `list_servers` |
+| `DELETE /servers?userId=&serverId=` | `delete_server` (seccion 9) |
 
 `deploy.sh` tambien deja todas las Lambdas con 30 segundos de timeout (el maximo de API Gateway), asi que ya no hace falta subirlo a mano como en las secciones anteriores. Al terminar imprime la URL de la API:
 
@@ -203,8 +204,84 @@ curl -i -X POST "$API_URL/login" -H "Content-Type: application/json"   -d '{"ema
 curl -i "$API_URL/servers?userId=1"
 ```
 
-Para que el frontend use la API real, se pone la misma URL en [`frontend/recursos-compartidos/config.js`](frontend/recursos-compartidos/config.js):
+Para probar el frontend en local contra la API real, se pone esa URL en [`frontend/recursos-compartidos/config.js`](frontend/recursos-compartidos/config.js) (sin hacer commit de ese cambio). Al publicarlo en S3 no hace falta: `deploy_frontend.sh` la pone solo (seccion 8).
 
-```js
-export const API_URL = "https://<api-id>.execute-api.us-east-1.amazonaws.com";
+## 7. Pruebas unitarias
+
+Codigo: [`tests/`](tests/)
+
+Pruebas con pytest de `register_user`, `login_user` y `list_servers`. No se conectan a AWS: la conexion a RDS y el cliente de EC2 se reemplazan con objetos falsos (`unittest.mock`), asi que corren en segundos y sin credenciales del Learner Lab.
+
+| Archivo | Que prueba |
+|---|---|
+| `test_register_user.py` | Datos invalidos y JSON invalido (400), registro correcto (201), que la password se guarde con hash y el email en minusculas, usuario repetido (409) y error de base de datos (500) |
+| `test_login_user.py` | Faltan datos (400), login correcto (200), password incorrecta y email inexistente con el mismo mensaje (401), base de datos sin tabla `users` y hashes con formato desconocido |
+| `test_list_servers.py` | Sin `userId` (400), usuario sin servidores, estado e IP desde EC2, instancia que ya no existe (`terminated`), que solo consulte los servidores del usuario y error de EC2 (500) |
+| `test_delete_server.py` | Datos invalidos (400), borrado correcto (termina la instancia y quita el registro), servidor de otro usuario (404), instancia que ya no existe en EC2 y que no se borre el registro si falla EC2 (500) |
+| `test_create_server_planes.py` | Instancia y memoria de Java de cada plan, plan por defecto (Hierro), plan que no existe (400) y limite de jugadores de cada plan |
+| `test_create_server_comandos.py` | Servidor sin comandos, que con `opUsername` el script de la EC2 deje esa cuenta como operador antes de arrancar, y nombres de Minecraft invalidos (400) |
+
+Para correrlas, desde la raiz del repositorio:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r tests/requirements.txt
+pytest tests -v
 ```
+
+## 8. Publicar el frontend en S3
+
+Script: [`scripts/deploy_frontend.sh`](scripts/deploy_frontend.sh)
+
+Publica `frontend/` en un bucket de S3 configurado como sitio web estatico (como en la sesion 6):
+
+1. Busca la URL del API Gateway `minecraft-servers-api`.
+2. Crea el bucket `minecraft-frontend-<id de la cuenta>` si no existe y lo configura como sitio web con `index.html` como documento de indice, asi `/login/` abre `login/index.html`.
+3. Da lectura publica a los archivos con una bucket policy (`s3:GetObject`) en lugar de ACLs.
+4. Copia el frontend a una carpeta temporal, genera ahi `config.js` con la URL del API y lo sube con `aws s3 sync --delete`. El `config.js` del repo no se modifica.
+
+Se corre despues de `deploy.sh`:
+
+```bash
+./scripts/deploy_frontend.sh
+```
+
+Al final imprime la direccion del sitio, por ejemplo `http://minecraft-frontend-<id de la cuenta>.s3-website-us-east-1.amazonaws.com`. Cada vez que cambia el frontend se vuelve a correr el mismo script.
+
+## 9. Borrar servidores y comandos
+
+### Lambda `delete_server`
+
+Codigo: [`lambdas/delete_server/lambda_function.py`](lambdas/delete_server/lambda_function.py)
+
+Recibe `userId` y `serverId` (ruta `DELETE /servers?userId=&serverId=`). Revisa en la tabla `servers` que el servidor sea de ese usuario, termina la instancia en EC2 (se pierden la maquina, el disco y el mundo) y borra el registro de la tabla para que ya no aparezca en la lista. Si la instancia ya no existia en EC2 solo se borra el registro. Si EC2 falla, el registro se queda para poder reintentar.
+
+| Respuesta | Cuando |
+|---|---|
+| 200 | Servidor borrado |
+| 400 | Falta el `userId` o el `serverId` no tiene formato de instancia (`i-...`) |
+| 404 | El servidor no existe o es de otro usuario |
+| 500 | Error interno |
+
+En el frontend se borra desde el detalle del servidor, con una ventana de confirmacion.
+
+```bash
+curl -i -X DELETE "$API_URL/servers?userId=1&serverId=i-0123456789abcdef0"
+```
+
+### Comandos en el servidor
+
+Al crear un servidor el usuario puede activar comandos y escribir su nombre de Minecraft Java. El frontend lo manda como `opUsername` a `create_server`, que lo valida (3 a 16 letras, numeros o `_`) y agrega al script de arranque de la EC2 la creacion de `ops.json` con esa cuenta como operador (nivel 4), usando la API de Mojang para obtener su UUID. Asi puede usar `/gamemode`, `/tp`, `/time` y dar permisos a otros con `/op`. Si la cuenta no existe, el servidor se instala igual pero sin operador.
+
+## 10. Planes
+
+Al crear un servidor el usuario elige un plan; `create_server` lo recibe como `plan` (si no viene, usa `hierro`) y con el decide el tipo de instancia, la memoria que se le da a Java (dejando espacio al sistema operativo) y el maximo de jugadores que acepta:
+
+| Plan | Instancia | RAM | Memoria de Java | Jugadores | Costo aprox. encendido |
+|---|---|---|---|---|---|
+| Piedra | `t3.small` | 2 GB | 1 GB | hasta 5 | $0.026/h |
+| Hierro | `t3.medium` | 4 GB | 2.5 GB | hasta 15 | $0.047/h |
+| Diamante | `t3.large` | 8 GB | 6 GB | hasta 30 | $0.088/h |
+
+El costo es el precio por hora de la instancia en us-east-1 (Linux, bajo demanda) mas la IP publica ($0.005/h). Con el servidor apagado solo se cobra el disco de 8 GB (menos de $1 al mes) hasta que se borra. Los limites de jugadores son conservadores: las tres instancias tienen 2 vCPU y el servidor de Minecraft usa sobre todo un nucleo, asi que lo que cambia entre planes es la memoria para cargar el mundo. El Learner Lab permite instancias hasta tamano `large`.

@@ -1,4 +1,4 @@
-import { controlarServidor, listarServidores } from "../recursos-compartidos/api.js";
+import { borrarServidor, controlarServidor, listarServidores } from "../recursos-compartidos/api.js";
 import {
   copiarTexto,
   enTransicion,
@@ -26,6 +26,8 @@ function iniciarDetalle() {
   const $ = (id) => document.getElementById(id);
   const botones = { encender: $("encender"), apagar: $("apagar"), respaldar: $("respaldar") };
   const modal = $("modal-apagar");
+  const modalBorrar = $("modal-borrar");
+  let borrando = false;
   let servidor = null;
   let accionLocal = null; // "backing-up" mientras se espera la respuesta del respaldo
   let temporizador = null;
@@ -83,6 +85,8 @@ function iniciarDetalle() {
     botones.encender.disabled = ocupado || estado.clase !== "off" || servidor.status === "terminated";
     botones.apagar.disabled = ocupado || estado.clase !== "on";
     botones.respaldar.disabled = ocupado || estado.clase !== "on";
+    // se puede borrar en cualquier estado: delete_server termina la instancia como este
+    $("borrar").disabled = borrando;
 
     const nota = $("nota-espera");
     nota.hidden = !ocupado;
@@ -91,12 +95,10 @@ function iniciarDetalle() {
 
     const ip = servidor.publicIp;
     $("panel-ip").classList.toggle("without-ip", !ip);
-    $("ip").textContent = ip || "Sin IP · se asigna al encender";
+    $("ip").textContent = ip ? servidor.address || ip : "Sin IP · se asigna al encender";
     $("ip-ayuda").hidden = !ip;
     $("copiar-ip").hidden = !ip;
 
-    $("info-estado").textContent = texto;
-    $("info-ip").textContent = ip || "Sin IP";
     $("info-instancia").textContent = servidor.instanceType || "—";
     $("info-fecha").textContent = formatearFecha(servidor.createdAt);
     $("info-respaldo").textContent = ultimoRespaldo();
@@ -166,6 +168,33 @@ function iniciarDetalle() {
       toastOk("Respaldo guardado");
     }
     pintar();
+  });
+
+  $("borrar").addEventListener("click", () => (modalBorrar.hidden = false));
+  $("cancelar-borrar").addEventListener("click", () => (modalBorrar.hidden = true));
+  modalBorrar.addEventListener("mousedown", (evento) => {
+    if (evento.target === modalBorrar) modalBorrar.hidden = true;
+  });
+  $("confirmar-borrar").addEventListener("click", async () => {
+    modalBorrar.hidden = true;
+    borrando = true;
+    clearTimeout(temporizador);
+    $("borrar").innerHTML = '<span aria-hidden="true">✕</span> Borrando…';
+    pintar();
+    try {
+      const { status } = await borrarServidor(sesion.userId, serverId);
+      if (status === 200) {
+        window.location.href = "../servidores/";
+        return;
+      }
+      if (status === 404) toastError("No encontramos este servidor en tu cuenta.");
+      else toastError("No se pudo borrar el servidor. Intenta de nuevo más tarde.");
+    } catch {
+      toastError("No se pudo conectar con el servidor. Intenta de nuevo.");
+    }
+    borrando = false;
+    $("borrar").innerHTML = '<span aria-hidden="true">✕</span> Borrar';
+    cargar();
   });
 
   $("copiar-ip").addEventListener("click", async () => {

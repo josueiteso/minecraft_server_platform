@@ -10,7 +10,7 @@
   <body>
     <main class="app-shell-page">
       <header class="app-header">
-        <a class="app-brand" href="../landing/" aria-label="Ir al inicio">
+        <a class="app-brand" href="../" aria-label="Ir al inicio">
           <span class="pixel-block" aria-hidden="true"><i></i></span>
           <span>NODO_</span>
         </a>
@@ -72,14 +72,6 @@
 
         <section class="detail-info-grid" aria-label="Información del servidor">
           <article class="detail-info-card">
-            <span class="detail-info-icon state" aria-hidden="true"><i></i></span>
-            <div><p>Estado</p><strong id="info-estado">—</strong></div>
-          </article>
-          <article class="detail-info-card">
-            <span class="detail-info-icon address" aria-hidden="true"><i></i></span>
-            <div><p>Dirección IP</p><strong id="info-ip">—</strong></div>
-          </article>
-          <article class="detail-info-card">
             <span class="detail-info-icon instance" aria-hidden="true"><i></i></span>
             <div><p>Tipo de instancia</p><strong id="info-instancia">—</strong></div>
           </article>
@@ -92,6 +84,16 @@
             <div><p>Último respaldo</p><strong id="info-respaldo">—</strong></div>
           </article>
         </section>
+
+        <section class="detail-danger" aria-labelledby="titulo-borrar">
+          <div>
+            <h2 id="titulo-borrar">Borrar servidor</h2>
+            <p>Se elimina la máquina en AWS junto con el mundo. No se puede deshacer.</p>
+          </div>
+          <button class="detail-action stop" id="borrar" disabled>
+            <span aria-hidden="true">✕</span> Borrar
+          </button>
+        </section>
       </div>
 
       <div class="pixel-modal-backdrop" role="presentation" id="modal-apagar" hidden>
@@ -102,6 +104,18 @@
           <div>
             <button class="modal-cancel" id="cancelar-apagar">Cancelar</button>
             <button class="modal-confirm" id="confirmar-apagar">Sí, apagar</button>
+          </div>
+        </section>
+      </div>
+
+      <div class="pixel-modal-backdrop" role="presentation" id="modal-borrar" hidden>
+        <section class="pixel-modal" role="dialog" aria-modal="true" aria-labelledby="titulo-modal-borrar">
+          <span class="modal-warning-icon" aria-hidden="true">!</span>
+          <h2 id="titulo-modal-borrar">¿Borrar el servidor?</h2>
+          <p>Se termina la instancia y se pierde el mundo para siempre. Los jugadores conectados serán desconectados.</p>
+          <div>
+            <button class="modal-cancel" id="cancelar-borrar">Cancelar</button>
+            <button class="modal-confirm" id="confirmar-borrar">Sí, borrar</button>
           </div>
         </section>
       </div>

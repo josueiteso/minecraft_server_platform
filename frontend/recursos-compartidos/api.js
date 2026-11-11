@@ -38,8 +38,11 @@ export function listarServidores(userId) {
 }
 
 // POST /servers -> create_server
-export function crearServidor(userId, serverName, minecraftVersion, gameMode, maxPlayers) {
-  const datos = { userId, serverName, minecraftVersion, gameMode, maxPlayers };
+// plan: piedra, hierro o diamante. opUsername es opcional: si viene, el servidor se crea
+// con comandos para esa cuenta de Minecraft
+export function crearServidor(userId, serverName, minecraftVersion, gameMode, maxPlayers, opUsername, plan) {
+  const datos = { userId, serverName, minecraftVersion, gameMode, maxPlayers, plan };
+  if (opUsername) datos.opUsername = opUsername;
   if (MODO_EJEMPLO) return ejemploCrear(datos);
   return pedir("POST", "/servers", datos);
 }
@@ -48,6 +51,13 @@ export function crearServidor(userId, serverName, minecraftVersion, gameMode, ma
 export function controlarServidor(userId, serverId, action) {
   if (MODO_EJEMPLO) return ejemploControl(serverId, action);
   return pedir("POST", "/servers/control", { userId, serverId, action });
+}
+
+// DELETE /servers?userId=&serverId= -> delete_server (termina la instancia y la quita de la lista)
+export function borrarServidor(userId, serverId) {
+  if (MODO_EJEMPLO) return ejemploBorrar(serverId);
+  const query = `userId=${encodeURIComponent(userId)}&serverId=${encodeURIComponent(serverId)}`;
+  return pedir("DELETE", `/servers?${query}`);
 }
 
 // ---------- Datos de ejemplo (cuando config.js no tiene URL) ----------
@@ -85,19 +95,25 @@ async function ejemploServidores() {
   });
   const base = [
     ...leer(CLAVE_CREADOS, []).map((s) =>
-      servidor(s.id, s.nombre, "pending", null, new Date(s.creado).toISOString(), "creating"),
+      ({
+        ...servidor(s.id, s.nombre, "pending", null, new Date(s.creado).toISOString(), "creating"),
+        instanceType: s.instancia || "t3.medium",
+      }),
     ),
     servidor("i-0a1b2c3d4e5f60001", "Survival con amigos", "running", "54.210.33.12", "2026-03-12T18:20:00"),
     servidor("i-0a1b2c3d4e5f60002", "Mundo creativo", "stopped", null, "2026-03-04T21:05:00"),
     servidor("i-0a1b2c3d4e5f60003", "Aventura nocturna", "pending", null, "2026-02-28T17:40:00"),
     servidor("i-0a1b2c3d4e5f60004", "Isla del norte", "stopping", "18.201.65.84", "2026-02-16T10:11:00"),
   ];
-  return { status: 200, datos: { servers: base.map(aplicarCambios) } };
+  const borrados = leer(CLAVE_BORRADOS, []);
+  const servers = base.filter((s) => !borrados.includes(s.serverId)).map(aplicarCambios);
+  return { status: 200, datos: { servers } };
 }
 
 // los cambios del modo ejemplo se guardan mientras la pestana este abierta
 const CLAVE_CREADOS = "servidores-ejemplo";
 const CLAVE_CAMBIOS = "servidores-ejemplo-cambios";
+const CLAVE_BORRADOS = "servidores-ejemplo-borrados";
 const SEGUNDOS_TRANSICION = 6;
 
 function leer(clave, porDefecto) {
@@ -145,13 +161,16 @@ function ipDeEjemplo(serverId, desde) {
   return `3.92.${20 + (n % 180)}.${30 + ((n * 7) % 200)}`;
 }
 
-async function ejemploCrear({ serverName }) {
+const INSTANCIA_DE_EJEMPLO = { piedra: "t3.small", hierro: "t3.medium", diamante: "t3.large" };
+
+async function ejemploCrear({ serverName, plan }) {
   await esperar(1500);
   if (serverName.toLowerCase() === "error") {
     return { status: 500, datos: { error: "Internal Server Error" } };
   }
   const id = `i-0ejemplo${Date.now().toString(16)}`;
-  const creados = [{ id, nombre: serverName, creado: Date.now() }, ...leer(CLAVE_CREADOS, [])];
+  const instancia = INSTANCIA_DE_EJEMPLO[plan] || "t3.medium";
+  const creados = [{ id, nombre: serverName, creado: Date.now(), instancia }, ...leer(CLAVE_CREADOS, [])];
   sessionStorage.setItem(CLAVE_CREADOS, JSON.stringify(creados));
   return {
     status: 202,
@@ -185,4 +204,15 @@ async function ejemploControl(serverId, action) {
     return { status: 200, datos: { message: "Respaldo guardado", backupKey: `backups/1/${serverId}/ejemplo.tar.gz` } };
   }
   return { status: 200, datos: { instanceId: serverId, status: servidor.status } };
+}
+
+// mismas respuestas que delete_server
+async function ejemploBorrar(serverId) {
+  const { datos } = await ejemploServidores();
+  if (!datos.servers.some((s) => s.serverId === serverId)) {
+    return { status: 404, datos: { error: "Servidor no encontrado" } };
+  }
+  await esperar(1200);
+  sessionStorage.setItem(CLAVE_BORRADOS, JSON.stringify([...leer(CLAVE_BORRADOS, []), serverId]));
+  return { status: 200, datos: { message: "Servidor eliminado", serverId } };
 }

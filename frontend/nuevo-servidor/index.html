@@ -10,7 +10,7 @@
   <body>
     <main class="app-shell-page">
       <header class="app-header">
-        <a class="app-brand" href="../landing/" aria-label="Ir al inicio">
+        <a class="app-brand" href="../" aria-label="Ir al inicio">
           <span class="pixel-block" aria-hidden="true"><i></i></span>
           <span>NODO_</span>
         </a>
@@ -50,6 +50,7 @@
                 <span>Versión de Minecraft</span>
                 <span class="select-wrap">
                   <select name="version">
+                    <option>1.21.11</option>
                     <option>1.21.10</option>
                     <option>1.21.9</option>
                     <option>1.21.8</option>
@@ -86,36 +87,64 @@
             </section>
 
             <section class="creation-section">
-              <div class="creation-section-title"><span>03</span><h2>Máximo de jugadores</h2></div>
-              <div class="player-stepper">
-                <button type="button" id="menos-jugadores" aria-label="Reducir jugadores">−</button>
-                <input type="number" name="jugadores" min="1" max="100" value="10" aria-label="Máximo de jugadores" />
-                <button type="button" id="mas-jugadores" aria-label="Aumentar jugadores">+</button>
-                <span>Entre 1 y 100</span>
+              <div class="creation-section-title"><span>03</span><h2>Plan</h2></div>
+              <div class="creation-plans" role="radiogroup" aria-label="Plan del servidor">
+                <button type="button" class="creation-plan" role="radio" aria-checked="false"
+                  data-plan="piedra" data-max="5" data-precio="$0.026/h" data-ram="2 GB">
+                  <span class="creation-plan-check" aria-hidden="true">✓</span>
+                  <b>Piedra</b>
+                  <strong>2 GB</strong>
+                  <small>t3.small · hasta 5 jugadores</small>
+                  <small>~$0.026/h encendido</small>
+                </button>
+                <button type="button" class="creation-plan selected" role="radio" aria-checked="true"
+                  data-plan="hierro" data-max="15" data-precio="$0.047/h" data-ram="4 GB">
+                  <span class="creation-plan-check" aria-hidden="true">✓</span>
+                  <b>Hierro</b>
+                  <strong>4 GB</strong>
+                  <small>t3.medium · hasta 15 jugadores</small>
+                  <small>~$0.047/h encendido</small>
+                </button>
+                <button type="button" class="creation-plan diamond-plan" role="radio" aria-checked="false"
+                  data-plan="diamante" data-max="30" data-precio="$0.088/h" data-ram="8 GB">
+                  <span class="creation-plan-check" aria-hidden="true">✓</span>
+                  <b>Diamante</b>
+                  <strong>8 GB</strong>
+                  <small>t3.large · hasta 30 jugadores</small>
+                  <small>~$0.088/h encendido</small>
+                </button>
               </div>
             </section>
 
             <section class="creation-section">
-              <div class="creation-section-title"><span>04</span><h2>Plan</h2></div>
-              <div class="creation-plans" role="radiogroup" aria-label="Plan del servidor">
-                <button type="button" class="creation-plan disabled" disabled>
-                  <span class="creation-plan-tag">Próximamente</span>
-                  <b>Piedra</b>
-                  <strong>2 GB</strong>
-                </button>
-                <button type="button" class="creation-plan selected" role="radio" aria-checked="true">
-                  <span class="creation-plan-check" aria-hidden="true">✓</span>
-                  <b>Hierro</b>
-                  <strong>4 GB</strong>
-                  <small>t3.medium · $0.10/h estimado</small>
-                </button>
-                <button type="button" class="creation-plan disabled diamond-plan" disabled>
-                  <span class="creation-plan-tag">Próximamente</span>
-                  <b>Diamante</b>
-                  <strong>8 GB</strong>
-                </button>
+              <div class="creation-section-title"><span>04</span><h2>Máximo de jugadores</h2></div>
+              <div class="player-stepper">
+                <button type="button" id="menos-jugadores" aria-label="Reducir jugadores">−</button>
+                <input type="number" name="jugadores" min="1" max="15" value="10" aria-label="Máximo de jugadores" />
+                <button type="button" id="mas-jugadores" aria-label="Aumentar jugadores">+</button>
+                <span id="limite-jugadores">Entre 1 y 15 con el plan Hierro</span>
               </div>
             </section>
+
+            <!-- comandos desactivados hasta probarlos en AWS (create_server ya acepta opUsername)
+            <section class="creation-section">
+              <div class="creation-section-title"><span>05</span><h2>Comandos</h2></div>
+              <label class="commands-toggle">
+                <input type="checkbox" name="comandos" />
+                <span class="commands-switch" aria-hidden="true"><i></i></span>
+                <span>
+                  <b>Activar comandos</b>
+                  <small>Tu cuenta podrá usar /gamemode, /tp, /time y dar permisos a tus amigos con /op</small>
+                </span>
+              </label>
+              <label class="creation-field commands-user" id="campo-operador" hidden>
+                <span>Tu nombre en Minecraft Java</span>
+                <input name="operador" maxlength="16" autocomplete="off" placeholder="constructor_22" />
+                <small>El nombre exacto de tu cuenta: 3 a 16 letras, números o _</small>
+                <em data-error="operador" hidden></em>
+              </label>
+            </section>
+            -->
           </div>
 
           <aside class="server-summary">
@@ -123,13 +152,14 @@
               <p class="summary-kicker">RESUMEN</p>
               <h2 id="resumen-nombre">Tu nuevo servidor</h2>
               <dl>
-                <div><dt>Versión</dt><dd id="resumen-version">1.21.10</dd></div>
+                <div><dt>Versión</dt><dd id="resumen-version">1.21.11</dd></div>
                 <div><dt>Modo</dt><dd id="resumen-modo">Survival</dd></div>
                 <div><dt>Jugadores</dt><dd id="resumen-jugadores">10 máximo</dd></div>
-                <div><dt>Plan</dt><dd>Hierro · 4 GB</dd></div>
-                <div class="summary-price"><dt>Estimado</dt><dd>$0.10/h</dd></div>
+                <!-- <div><dt>Comandos</dt><dd id="resumen-comandos">No</dd></div> -->
+                <div><dt>Plan</dt><dd id="resumen-plan">Hierro · 4 GB</dd></div>
+                <div class="summary-price"><dt>Estimado</dt><dd id="resumen-precio">$0.047/h</dd></div>
               </dl>
-              <p class="pay-note"><span aria-hidden="true">◆</span> Solo pagas mientras el servidor está encendido</p>
+              <p class="pay-note"><span aria-hidden="true">◆</span> Costo estimado de AWS en us-east-1 (instancia + IP pública) mientras está encendido. El disco cuesta menos de $1 al mes hasta que borres el servidor.</p>
               <div class="creation-info" role="status" id="creando" hidden>
                 <i aria-hidden="true"></i>
                 <p><b>Creando tu servidor…</b> puede tardar unos minutos. Te llevaremos a tu panel cuando esté listo.</p>

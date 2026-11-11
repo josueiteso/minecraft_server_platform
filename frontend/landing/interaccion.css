@@ -1,0 +1,219 @@
+/* Pagina de inicio (3 de 3): footer, indicador de profundidad, animaciones, hover y ajustes de celular.
+   Va al final para que sus reglas tengan prioridad sobre las de los otros dos archivos. */
+
+/* Footer: barra solida a todo lo ancho (como el navbar) para que no se pierda sobre la textura */
+.footer {
+  position: relative;
+  z-index: 3;
+  min-height: 96px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #aeb8c4;
+}
+
+.footer::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 100vw;
+  translate: -50% 0;
+  background: #0e1323;
+  border-top: 3px solid var(--noche);
+  box-shadow: 0 -4px 0 rgba(5, 8, 15, .35);
+}
+
+.footer-brand { font-size: 16px; }
+
+.footer-brand .pixel-block { width: 24px; height: 24px; }
+
+.footer > div { display: flex; gap: 10px; }
+
+.footer a:not(.brand), .footer button {
+  padding: 8px 10px;
+  color: #e6ebf2;
+  background: none;
+  border: 0;
+  text-decoration: none;
+  font: 700 10px var(--fuente-pixel);
+  letter-spacing: .3px;
+  transition: color .15s ease, background-color .15s ease;
+}
+
+.footer a:not(.brand):hover, .footer button:hover { color: var(--texto-sobre-verde); background: var(--verde-claro); }
+
+.footer > p { color: #aeb8c4; font: 700 10px var(--fuente-pixel); }
+
+.crystals i { position: absolute; bottom: 80px; width: 18px; height: 46px; background: #3ca7ab; clip-path: polygon(50% 0, 100% 32%, 79% 100%, 18% 100%, 0 31%); box-shadow: 0 0 26px #41bfc0; opacity: .55; }
+
+.crystal-left i:nth-child(1) { left: 3%; }
+
+.crystal-left i:nth-child(2) { left: 5%; width: 12px; height: 30px; transform: rotate(22deg); }
+
+.crystal-left i:nth-child(3) { left: 9%; width: 10px; height: 20px; opacity: .3; }
+
+.crystal-right i:nth-child(1) { right: 5%; bottom: 160px; background: #7155bb; box-shadow: 0 0 24px #755bc2; }
+
+.crystal-right i:nth-child(2) { right: 8%; bottom: 150px; width: 11px; height: 28px; background: #7155bb; transform: rotate(-18deg); }
+
+.depth-meter {
+  position: fixed;
+  z-index: 30;
+  right: 22px;
+  top: 50%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transform: translateY(-50%);
+}
+
+.depth-label { color: #e0e5e9; font: 700 7px var(--fuente-pixel); writing-mode: vertical-rl; transform: rotate(180deg); text-shadow: 2px 2px #0b0d10; }
+
+.depth-track { position: relative; width: 4px; height: 144px; background: rgba(255,255,255,.18); }
+
+.depth-progress { position: absolute; top: 0; width: 100%; background: #9ed762; transition: height .15s linear; }
+
+.depth-track a { position: absolute; left: -3px; width: 10px; height: 10px; background: #637080; border: 2px solid #171c22; }
+
+.depth-track a:nth-of-type(1) { top: 0; }
+
+.depth-track a:nth-of-type(2) { top: 32%; }
+
+.depth-track a:nth-of-type(3) { top: 65%; }
+
+.depth-track a:nth-of-type(4) { bottom: 0; }
+
+.depth-track a.active { background: #a2db68; box-shadow: 0 0 8px rgba(162,219,104,.6); }
+
+.reveal { opacity: 0; transform: translateY(22px); transition: opacity .65s ease var(--retraso, 0s), transform .65s ease var(--retraso, 0s); }
+
+.reveal.is-visible { opacity: 1; transform: translateY(0); }
+
+.steps-grid .reveal:nth-child(2), .plans-grid .reveal:nth-child(2), .cost-grid .reveal:nth-child(2) { --retraso: .1s; }
+
+.steps-grid .reveal:nth-child(3), .plans-grid .reveal:nth-child(3), .cost-grid .reveal:nth-child(3) { --retraso: .2s; }
+
+/* Hover: la tarjeta se levanta y su sombra crece. Se usa "translate" para no chocar con el
+   "transform" de la animacion de aparicion, y el retraso de esa animacion no aplica aqui. */
+.server-stage, .earth-card, .cost-card, .plan-card {
+  transition: opacity .65s ease var(--retraso, 0s), transform .65s ease var(--retraso, 0s), translate .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+
+.server-card, .server-info span, .server-screen button, .plan-card button { transition: translate .15s ease, box-shadow .18s ease, border-color .18s ease, background-color .15s ease; }
+
+@media (hover: hover) {
+  .server-stage:hover { translate: -4px -6px; }
+  .server-stage:hover .server-card { border-color: #5b8f3e; box-shadow: inset 3px 3px 0 rgba(255, 255, 255, .08), inset -3px -3px 0 rgba(0, 0, 0, .45), 16px 16px 0 rgba(5, 8, 13, .7), 0 0 32px rgba(141, 202, 82, .2); }
+  .server-screen button:hover { border-color: var(--verde-pasto); background: #1f2c3f; }
+  .server-info span:hover { translate: 0 -3px; background: #2a3550; box-shadow: inset 2px 2px 0 rgba(255, 255, 255, .06), 0 3px 0 var(--verde-pasto); }
+
+  .earth-card:hover { translate: -4px -6px; border-color: #b8862e; box-shadow: inset 0 -5px 0 #d9c497, 13px 13px 0 rgba(20, 12, 8, .55), 0 0 30px rgba(227, 183, 102, .45); }
+  .earth-card:hover .item, .cost-card:hover .item, .plan-card:hover .item { translate: 0 -5px; }
+
+  .cost-card:hover { translate: -4px -6px; border-color: #3a8a1e; box-shadow: inset 3px 3px 0 var(--gui-luz), inset -3px -3px 0 var(--gui-sombra), 12px 12px 0 rgba(0, 0, 0, .4), 0 0 28px rgba(167, 219, 117, .45); }
+
+  /* el plan bajo el mouse toma el estilo de "elegido" con el color de su mineral,
+     y Hierro vuelve a verse normal mientras tanto */
+  .plan-card:hover { translate: -4px -8px; border-color: var(--color-plan); box-shadow: inset 0 0 0 2px var(--color-plan-oscuro), 14px 14px 0 rgba(8,11,13,.7), 0 0 40px var(--brillo-plan); }
+  .plan-card:hover .plan-tag { color: #12161a; background: var(--color-plan); }
+  .plans-grid:has(.plan-card:hover) .plan-card.featured:not(:hover) { border-color: #0c1013; box-shadow: inset 0 0 0 2px #38424a, 8px 8px 0 rgba(8,11,13,.65); }
+  .plans-grid:has(.plan-card:hover) .plan-card.featured:not(:hover) .plan-tag { color: #9da8ae; background: #343d43; }
+  .plan-card button:hover:not(:disabled) { translate: -2px -2px; box-shadow: 6px 6px 0 #080a0c; }
+}
+
+.plan-card.stone { --color-plan: #a9b2b7; --color-plan-oscuro: #5d666b; --brillo-plan: rgba(169,178,183,.18); }
+
+.plan-card.iron { --color-plan: #d49351; --color-plan-oscuro: #a8743f; --brillo-plan: rgba(212,147,81,.25); }
+
+.plan-card.diamond { --color-plan: #4fd0db; --color-plan-oscuro: #2b8a92; --brillo-plan: rgba(79,208,219,.22); }
+
+.plan-tag { transition: color .18s ease, background-color .18s ease; }
+
+/* en pantalla ancha el plan elegido tambien es mas alto */
+@media (hover: hover) and (min-width: 901px) {
+  .plan-card { transition: opacity .65s ease var(--retraso, 0s), transform .65s ease var(--retraso, 0s), translate .18s ease, box-shadow .18s ease, border-color .18s ease, min-height .2s ease, padding-top .2s ease; }
+  .plan-card:hover { min-height: 540px; padding-top: 47px; }
+  .plans-grid:has(.plan-card:hover) .plan-card.featured:not(:hover) { min-height: 500px; padding-top: 32px; }
+}
+
+@keyframes cloud-drift { to { translate: 70px 0; } }
+
+@keyframes sway { to { transform: rotate(7deg); } }
+
+@keyframes sparkle { 50% { opacity: .35; filter: brightness(.7); } }
+
+@media (max-width: 900px) {
+  html { scroll-padding-top: 108px; }
+  /* las secciones pasan a una segunda fila del navbar */
+  .nav { height: auto; display: flex; justify-content: space-between; flex-wrap: wrap; row-gap: 12px; padding-block: 14px; }
+  .nav.shell { width: calc(100% - 48px); }
+  .nav-links { order: 3; width: 100%; justify-content: center; gap: 8px; }
+  .nav-links a { min-height: 32px; padding: 0 10px; font-size: 8px; }
+  .hero-content { grid-template-columns: 1fr; gap: 58px; padding-top: 65px; padding-bottom: 130px; }
+  .hero-copy { text-align: center; }
+  .hero-copy .eyebrow, .trust-row { justify-content: center; }
+  .hero-copy h1, .hero-subtitle { margin-inline: auto; }
+  .server-stage { width: min(540px, 100%); margin-inline: auto; }
+  .steps-grid, .plans-grid { grid-template-columns: 1fr; max-width: 560px; margin-inline: auto; }
+  .cost-grid { grid-template-columns: 1fr; max-width: 560px; margin-inline: auto; }
+  .plan-card, .plan-card.featured { min-height: auto; }
+  .footer { flex-wrap: wrap; gap: 30px; padding-block: 30px; }
+  .footer > div { order: 3; width: 100%; justify-content: center; }
+}
+
+@media (max-width: 600px) {
+  .shell { width: min(100% - 32px, 500px); }
+  .hero-layer { min-height: 978px; }
+  .nav { padding-block: 12px; }
+  .nav.shell { width: calc(100% - 32px); }
+  .brand { font-size: 16px; gap: 8px; }
+  .nav .pixel-block { width: 24px; height: 24px; }
+  .nav-actions { gap: 8px; }
+  .text-button, .mini-button { min-height: 32px; padding: 0 9px; font-size: 8px; }
+  .hero-content { padding-top: 36px; align-items: start; gap: 58px; }
+  .hero-copy h1 { margin-block: 20px; font-size: 31px; line-height: 1.23; letter-spacing: -1.5px; }
+  .hero-subtitle { font-size: 16px; line-height: 1.55; }
+  .trust-row { gap: 10px; font-size: 12px; }
+  .trust-row span + span::before { margin-right: 4px; }
+  .card-top { align-items: flex-start; }
+  .card-top { padding: 14px; gap: 10px; }
+  .card-top .server-avatar { width: 46px; height: 46px; }
+  .server-avatar .pixel-block { width: 24px; height: 24px; }
+  .card-top h2 { font-size: 13px; }
+  .online-badge { padding: 6px 8px; font-size: 11px; }
+  .server-screen { margin: 16px 14px 14px; padding: 12px; }
+  .server-screen code { font-size: 12px; }
+  .server-info { gap: 6px; margin: 0 14px; }
+  .server-info span { padding: 10px 3px; font-size: 10px; }
+  .server-info .item { width: 26px; height: 26px; }
+  .card-status { margin: 16px 14px 18px; font-size: 13px; }
+  .chip-top { right: -5px; top: -35px; }
+  .chip-bottom { left: -5px; }
+  .section-content { padding-block: 96px; }
+  .stone-layer .section-content { padding-top: 190px; padding-bottom: 70px; }
+  .section-header { margin-bottom: 40px; }
+  .section-header h2, .cta h2 { font-size: 26px; line-height: 1.3; }
+  .section-header p:not(.eyebrow), .cta > p:not(.eyebrow) { font-size: 15px; }
+  .steps-grid { gap: 18px; }
+  .earth-card p { font-size: 16px; }
+  .cost-card { padding: 16px 14px; grid-template-columns: 54px 1fr auto; column-gap: 12px; }
+  .item-slot { width: 54px; height: 54px; }
+  .item { width: 40px; height: 40px; }
+  .section-header { padding: 20px 18px 22px; }
+  .cost-card h3 { font-size: 12px; }
+  .cost-card strong { font-size: 22px; }
+  .plan-card { padding: 28px 24px; }
+  .ore-layer { min-height: auto; }
+  .cta { padding: 95px 8px 105px; }
+  .footer { justify-content: center; text-align: center; }
+  .footer > div { gap: 15px 20px; flex-wrap: wrap; }
+  .depth-meter { right: 6px; }
+  .depth-label { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal { opacity: 1; transform: none; }
+}

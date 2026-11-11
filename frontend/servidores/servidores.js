@@ -77,7 +77,7 @@ function tarjetaServidor(servidor) {
     : '<i class="status-dot" aria-hidden="true"></i>';
   const ip = servidor.publicIp
     ? `<button data-copiar="${escapar(servidor.address)}" aria-label="Copiar IP de ${escapar(servidor.serverName)}">
-         <code>${escapar(servidor.publicIp)}</code><b>Copiar</b>
+         <code>${escapar(servidor.address || servidor.publicIp)}</code><b>Copiar</b>
        </button>`
     : "<span>Sin IP · se asigna al encender</span>";
 
@@ -93,7 +93,7 @@ function tarjetaServidor(servidor) {
         <span class="dashboard-status ${estado.clase}">${icono}${estado.texto}</span>
       </div>
       <div class="ip-copy-chip ${servidor.publicIp ? "" : "no-ip"}">${ip}</div>
-      <p class="ip-change-note">La IP cambia cada vez que se enciende</p>
+      ${servidor.publicIp ? '<p class="ip-change-note">La IP cambia cada vez que se enciende</p>' : ""}
       <dl class="server-card-meta">
         <div><dt>Instancia</dt><dd>${escapar(servidor.instanceType || "—")}</dd></div>
         <div><dt>Creado</dt><dd>${formatearFecha(servidor.createdAt)}</dd></div>

@@ -11,6 +11,7 @@ function iniciarLanding() {
   const etiqueta = document.querySelector(".depth-label");
   const puntos = document.querySelectorAll(".depth-track a");
   const capas = [...document.querySelectorAll("[data-depth]")];
+  const enlacesMenu = document.querySelectorAll(".nav-links a");
 
   const alHacerScroll = () => {
     const maximo = document.documentElement.scrollHeight - window.innerHeight;
@@ -24,6 +25,9 @@ function iniciarLanding() {
       etiqueta.textContent = ETIQUETAS_PROFUNDIDAD[indice];
       puntos.forEach((punto, i) => punto.classList.toggle("active", i === indice));
     }
+    // el boton del menu de la seccion visible queda marcado
+    const seccion = indice >= 0 ? `#${capas[indice].id}` : "";
+    enlacesMenu.forEach((enlace) => enlace.classList.toggle("active", enlace.getAttribute("href") === seccion));
   };
   alHacerScroll();
   window.addEventListener("scroll", alHacerScroll, { passive: true });

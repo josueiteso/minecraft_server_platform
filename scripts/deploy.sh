@@ -14,7 +14,7 @@ API_NAME="minecraft-servers-api"
 # configuracion de todas las lambdas
 RUNTIME="python3.12"
 HANDLER="lambda_function.lambda_handler"
-ENV_VARS="Variables={DB_INSTANCE_ID=${DB_INSTANCE_IDENTIFIER},SECURITY_GROUP_NAME=minecraft-servers-sg,INSTANCE_TYPE=t3.medium}"
+ENV_VARS="Variables={DB_INSTANCE_ID=${DB_INSTANCE_IDENTIFIER},SECURITY_GROUP_NAME=minecraft-servers-sg}"
 TIMEOUT=30 # timeout de 30s es tambien el maximo de API Gateway
 MEMORY_SIZE=256
 
@@ -47,6 +47,7 @@ route_for() {
     register_user) echo "POST /register" ;;
     login_user) echo "POST /login" ;;
     list_servers) echo "GET /servers" ;;
+    delete_server) echo "DELETE /servers" ;;
     *) echo "" ;;
   esac
 }
