@@ -102,6 +102,15 @@
 
 .modal-confirm { color: #f6d7cf; background: #9e443b; }
 
+/* Hover: tarjetas de informacion y panel de IP se levantan */
+.detail-info-card, .detail-ip-panel, .detail-ip-panel > button { transition: translate .16s ease, box-shadow .16s ease, background-color .15s ease; }
+
+@media (hover: hover) {
+  .detail-info-card:hover { translate: -3px -4px; box-shadow: inset 0 0 0 2px #5f8f42, 9px 9px 0 rgba(5,7,9,.55); }
+  .detail-ip-panel:hover { translate: -3px -4px; box-shadow: inset 0 0 0 2px #5f8f42, 11px 11px 0 rgba(5,7,9,.6); }
+  .detail-ip-panel > button:hover { translate: -2px -2px; box-shadow: 6px 6px 0 #080a0c; }
+}
+
 @media (max-width: 560px) {
   .server-detail-page { width: calc(100% - 32px); padding-top: 38px; }
   .server-detail-page.full-detail { width: calc(100% - 32px); padding-top: 34px; }

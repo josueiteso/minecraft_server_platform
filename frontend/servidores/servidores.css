@@ -152,4 +152,14 @@
   .pixel-server-icon { width: 35px; height: 41px; }
 }
 
+/* Hover: la tarjeta y los botones se levantan para saber cual esta seleccionado */
+.dashboard-server-card, .manage-server-button, .new-server-button, .ip-copy-chip button { transition: translate .16s ease, box-shadow .16s ease, background-color .15s ease, border-color .15s ease, color .15s ease; }
+
+@media (hover: hover) {
+  .dashboard-server-card:not(.server-skeleton):hover { translate: -3px -5px; box-shadow: inset 0 0 0 2px #5f8f42, 11px 11px 0 rgba(5,7,9,.62); }
+  .ip-copy-chip button:hover { background: #182019; box-shadow: inset 0 0 0 1px #8dca52; }
+  .manage-server-button:hover { translate: -2px -2px; box-shadow: 6px 6px 0 #080a0c; }
+  .new-server-button:hover { transform: none; translate: -2px -2px; box-shadow: inset 0 4px 0 rgba(255,255,255,.18), 6px 6px 0 #080b07; }
+}
+
 @keyframes skeleton-sweep { to { transform: translateX(100%); } }

@@ -161,6 +161,21 @@
 
 .creation-info b { color: #efc56f; }
 
+/* Hover: las opciones se levantan y la seccion que se esta llenando se marca en verde */
+.creation-section, .summary-card, .game-mode-grid > button, .creation-plan, .player-stepper button { transition: translate .16s ease, box-shadow .16s ease, background-color .15s ease, border-color .15s ease; }
+
+.creation-section:focus-within { box-shadow: inset 0 0 0 2px #5f8f42, 6px 6px 0 rgba(5,7,9,.58); }
+
+@media (hover: hover) {
+  .creation-section:hover { box-shadow: inset 0 0 0 2px #4d5862, 6px 6px 0 rgba(5,7,9,.58); }
+  .creation-section:focus-within:hover { box-shadow: inset 0 0 0 2px #5f8f42, 6px 6px 0 rgba(5,7,9,.58); }
+  .game-mode-grid > button:hover { translate: -2px -3px; box-shadow: 4px 4px 0 #090b0d; }
+  .creation-plan:not(.disabled):hover { translate: -2px -3px; border-color: #b67943; box-shadow: 4px 4px 0 #090b0d; }
+  .creation-plan.selected:hover { box-shadow: inset 0 0 0 2px #58432d, 4px 4px 0 #090b0d; }
+  .player-stepper button:hover:not(:disabled) { translate: -1px -2px; box-shadow: 3px 3px 0 #090b0d; }
+  .summary-card:hover { translate: -3px -4px; box-shadow: inset 0 0 0 2px #5f8f42, 10px 10px 0 rgba(5,7,9,.65); }
+}
+
 @media (max-width: 800px) {
   .server-creation-layout { grid-template-columns: 1fr; }
   .server-summary { position: static; }
