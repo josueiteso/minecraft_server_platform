@@ -22,7 +22,7 @@
   width: 100vw;
   translate: -50% 0;
   background: #0e1323;
-  border-top: 3px solid #070a12;
+  border-top: 3px solid var(--noche);
   box-shadow: 0 -4px 0 rgba(5, 8, 15, .35);
 }
 
@@ -38,14 +38,14 @@
   background: none;
   border: 0;
   text-decoration: none;
-  font: 700 10px 'Silkscreen', monospace;
+  font: 700 10px var(--fuente-pixel);
   letter-spacing: .3px;
   transition: color .15s ease, background-color .15s ease;
 }
 
-.footer a:not(.brand):hover, .footer button:hover { color: #10190c; background: #a3db6d; }
+.footer a:not(.brand):hover, .footer button:hover { color: var(--texto-sobre-verde); background: var(--verde-claro); }
 
-.footer > p { color: #aeb8c4; font: 700 10px 'Silkscreen', monospace; }
+.footer > p { color: #aeb8c4; font: 700 10px var(--fuente-pixel); }
 
 .crystals i { position: absolute; bottom: 80px; width: 18px; height: 46px; background: #3ca7ab; clip-path: polygon(50% 0, 100% 32%, 79% 100%, 18% 100%, 0 31%); box-shadow: 0 0 26px #41bfc0; opacity: .55; }
 
@@ -70,7 +70,7 @@
   transform: translateY(-50%);
 }
 
-.depth-label { color: #e0e5e9; font: 700 7px 'Silkscreen', monospace; writing-mode: vertical-rl; transform: rotate(180deg); text-shadow: 2px 2px #0b0d10; }
+.depth-label { color: #e0e5e9; font: 700 7px var(--fuente-pixel); writing-mode: vertical-rl; transform: rotate(180deg); text-shadow: 2px 2px #0b0d10; }
 
 .depth-track { position: relative; width: 4px; height: 144px; background: rgba(255,255,255,.18); }
 
@@ -107,13 +107,13 @@
 @media (hover: hover) {
   .server-stage:hover { translate: -4px -6px; }
   .server-stage:hover .server-card { border-color: #5b8f3e; box-shadow: inset 3px 3px 0 rgba(255, 255, 255, .08), inset -3px -3px 0 rgba(0, 0, 0, .45), 16px 16px 0 rgba(5, 8, 13, .7), 0 0 32px rgba(141, 202, 82, .2); }
-  .server-screen button:hover { border-color: #8dca52; background: #1f2c3f; }
-  .server-info span:hover { translate: 0 -3px; background: #2a3550; box-shadow: inset 2px 2px 0 rgba(255, 255, 255, .06), 0 3px 0 #8dca52; }
+  .server-screen button:hover { border-color: var(--verde-pasto); background: #1f2c3f; }
+  .server-info span:hover { translate: 0 -3px; background: #2a3550; box-shadow: inset 2px 2px 0 rgba(255, 255, 255, .06), 0 3px 0 var(--verde-pasto); }
 
   .earth-card:hover { translate: -4px -6px; border-color: #b8862e; box-shadow: inset 0 -5px 0 #d9c497, 13px 13px 0 rgba(20, 12, 8, .55), 0 0 30px rgba(227, 183, 102, .45); }
   .earth-card:hover .item, .cost-card:hover .item, .plan-card:hover .item { translate: 0 -5px; }
 
-  .cost-card:hover { translate: -4px -6px; border-color: #3a8a1e; box-shadow: inset 3px 3px 0 #ffffff, inset -3px -3px 0 #555555, 12px 12px 0 rgba(0, 0, 0, .4), 0 0 28px rgba(167, 219, 117, .45); }
+  .cost-card:hover { translate: -4px -6px; border-color: #3a8a1e; box-shadow: inset 3px 3px 0 var(--gui-luz), inset -3px -3px 0 var(--gui-sombra), 12px 12px 0 rgba(0, 0, 0, .4), 0 0 28px rgba(167, 219, 117, .45); }
 
   /* el plan bajo el mouse toma el estilo de "elegido" con el color de su mineral,
      y Hierro vuelve a verse normal mientras tanto */

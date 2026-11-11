@@ -74,10 +74,6 @@
 /* Paneles claros estilo menu del juego: gris claro con bisel blanco arriba-izquierda
    y gris oscuro abajo-derecha, texto oscuro. Se usan en placas de titulos y costos. */
 .section-header, .cost-card {
-  --gui: #c6c6c6;
-  --gui-luz: #ffffff;
-  --gui-sombra: #555555;
-  --gui-texto: #3f3f3f;
   color: var(--gui-texto);
   background: var(--gui);
   border: 3px solid #1b1b1b;
@@ -95,16 +91,12 @@
   padding: 22px 34px 24px;
 }
 
-.section-header.centered { margin-inline: auto; text-align: center; }
-
-.section-header.centered .eyebrow { justify-content: center; }
-
 .section-header .eyebrow, .stone-layer .section-header .eyebrow { color: #2f7a16; text-shadow: none; }
 
 .section-header h2 {
   margin: 12px 0 8px;
-  color: #2b2b2b;
-  font: 700 clamp(28px, 3vw, 42px)/1.2 'Silkscreen', monospace;
+  color: var(--gui-texto-oscuro);
+  font: 700 clamp(28px, 3vw, 42px)/1.2 var(--fuente-pixel);
   letter-spacing: -1.5px;
   text-shadow: 3px 3px 0 rgba(0, 0, 0, .18);
 }
@@ -116,7 +108,7 @@
 .cta h2 {
   margin: 16px 0;
   color: #fff;
-  font: 700 clamp(28px, 3vw, 42px)/1.2 'Silkscreen', monospace;
+  font: 700 clamp(28px, 3vw, 42px)/1.2 var(--fuente-pixel);
   letter-spacing: -1.5px;
   text-shadow: 4px 4px 0 rgba(0,0,0,.55);
 }
@@ -160,10 +152,10 @@
 .earth-card {
   position: relative;
   padding: 0 0 28px;
-  color: #2b1a0e;
+  color: var(--madera-oscura);
   text-align: center;
   background: #f1e4c6;
-  border: 3px solid #2b1a0e;
+  border: 3px solid var(--madera-oscura);
   box-shadow: inset 0 -5px 0 #d9c497, 7px 7px 0 rgba(20, 12, 8, .55);
 }
 
@@ -173,7 +165,7 @@
   margin-bottom: 52px;
   background: url('texturas/madera.png') 0 0 / 64px 64px;
   image-rendering: pixelated;
-  border-bottom: 3px solid #2b1a0e;
+  border-bottom: 3px solid var(--madera-oscura);
   box-shadow: inset 0 3px 0 rgba(255, 228, 180, .45), inset 0 -4px 0 rgba(60, 34, 14, .45);
 }
 
@@ -184,7 +176,7 @@
   width: 80px;
   height: 80px;
   translate: -50% 0;
-  border: 3px solid #2b1a0e;
+  border: 3px solid var(--madera-oscura);
 }
 
 .step-top .item { width: 60px; height: 60px; }
@@ -195,13 +187,13 @@
   left: 12px;
   padding: 7px 10px;
   color: #ffe08a;
-  background: #2b1a0e;
+  background: var(--madera-oscura);
   border: 2px solid #120a04;
   box-shadow: inset 0 0 0 1px #7a5232, 3px 3px 0 rgba(0, 0, 0, .35);
-  font: 700 11px 'Silkscreen', monospace;
+  font: 700 11px var(--fuente-pixel);
 }
 
-.earth-card h3 { margin: 0 20px 10px; color: #2b1a0e; font: 700 18px 'Silkscreen', monospace; }
+.earth-card h3 { margin: 0 20px 10px; color: var(--madera-oscura); font: 700 18px var(--fuente-pixel); }
 
 .earth-card p { margin: 0 24px; color: #4a3420; font-size: 16px; font-weight: 600; line-height: 1.55; }
 
@@ -219,7 +211,7 @@
     border-bottom: 12px solid transparent;
     border-left: 15px solid #ffe08a;
     translate: 0 -50%;
-    filter: drop-shadow(3px 3px 0 #2b1a0e);
+    filter: drop-shadow(3px 3px 0 var(--madera-oscura));
   }
 }
 
@@ -257,13 +249,13 @@
 
 .cost-slot { grid-row: span 2; }
 
-.cost-card h3 { color: #2b2b2b; font: 700 14px 'Silkscreen', monospace; }
+.cost-card h3 { color: var(--gui-texto-oscuro); font: 700 14px var(--fuente-pixel); }
 
 .cost-card p { margin-top: 6px; color: #4a4a4a; font-size: 15px; font-weight: 600; }
 
-.cost-card .hours { color: #7a5a14; font: 700 12px 'Silkscreen', monospace; }
+.cost-card .hours { color: #7a5a14; font: 700 12px var(--fuente-pixel); }
 
-.cost-card strong { grid-column: 2 / 4; color: #2e7d1a; font: 700 26px 'Silkscreen', monospace; }
+.cost-card strong { grid-column: 2 / 4; color: #2e7d1a; font: 700 26px var(--fuente-pixel); }
 
 .cost-card strong small { margin-left: 4px; font: 700 12px 'DM Sans', sans-serif; color: #4a4a4a; }
 
@@ -327,18 +319,18 @@
   position: absolute; top: -14px; right: 18px;
   padding: 8px 10px;
   color: #9da8ae; background: #343d43; border: 2px solid #0c1013;
-  font: 700 8px 'Silkscreen', monospace;
+  font: 700 8px var(--fuente-pixel);
 }
 
 .featured .plan-tag { color: #23170e; background: #d49351; }
 
-.plan-card h3 { color: #f1efe5; font: 700 20px 'Silkscreen', monospace; }
+.plan-card h3 { color: #f1efe5; font: 700 20px var(--fuente-pixel); }
 
 .plan-description { margin: 10px 0 22px; color: #c2cbd1; font-size: 14px; }
 
 .price { display: flex; align-items: center; gap: 10px; padding-bottom: 24px; border-bottom: 1px solid #354049; }
 
-.price strong { color: #fff; font: 700 28px 'Silkscreen', monospace; }
+.price strong { color: #fff; font: 700 28px var(--fuente-pixel); }
 
 .price span { color: #d3dade; font-size: 12px; font-weight: 700; line-height: 1.35; }
 
@@ -352,7 +344,7 @@
   width: 100%; min-height: 48px;
   color: #171009; background: #cc8948;
   border: 3px solid #090c0e; box-shadow: 4px 4px 0 #080a0c;
-  font: 700 10px 'Silkscreen', monospace;
+  font: 700 10px var(--fuente-pixel);
 }
 
 .plan-card button:hover:not(:disabled) { background: #e2a15d; }
