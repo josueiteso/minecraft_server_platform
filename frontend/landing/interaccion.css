@@ -121,7 +121,7 @@
   .plan-card:hover .plan-tag { color: #12161a; background: var(--color-plan); }
   .plans-grid:has(.plan-card:hover) .plan-card.featured:not(:hover) { border-color: #0c1013; box-shadow: inset 0 0 0 2px #38424a, 8px 8px 0 rgba(8,11,13,.65); }
   .plans-grid:has(.plan-card:hover) .plan-card.featured:not(:hover) .plan-tag { color: #9da8ae; background: #343d43; }
-  .plan-card button:hover:not(:disabled) { translate: -2px -2px; box-shadow: 6px 6px 0 #080a0c; }
+  .plan-card button:hover:not(:disabled) { translate: -2px -2px; box-shadow: inset 0 3px 0 rgba(255, 255, 255, .25), 6px 6px 0 #080a0c; }
 }
 
 .plan-card.stone { --color-plan: #a9b2b7; --color-plan-oscuro: #5d666b; --brillo-plan: rgba(169,178,183,.18); }
