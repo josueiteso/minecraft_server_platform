@@ -1,15 +1,11 @@
 name: Teardown infrastructure
-
 on:
   workflow_dispatch:
-
 permissions:
   contents: read
-
 concurrency:
   group: aws-infra
   cancel-in-progress: false
-
 jobs:
   teardown:
     runs-on: ubuntu-latest

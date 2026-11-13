@@ -1,6 +1,10 @@
+import base64
+import hashlib
+import hmac
 import importlib.util
 import json
 import os
+import time
 from pathlib import Path
 from unittest.mock import MagicMock
 
@@ -21,9 +25,35 @@ def cargar_lambda(nombre):
     return modulo
 
 
+SECRETO_PRUEBA = "secreto-test"
+
+
+def _b64(datos):
+    return base64.urlsafe_b64encode(datos).rstrip(b"=").decode()
+
+
+# firma un token como lo haria login_user pero de forma independiente para poder probar tokens invalidos
+def firmar_token(user_id, secreto=SECRETO_PRUEBA, vence_en=3600, alg="HS256"):
+    ahora = int(time.time())
+    header = _b64(json.dumps({"alg": alg, "typ": "JWT"}).encode())
+    claims = _b64(
+        json.dumps(
+            {"sub": str(user_id), "iat": ahora, "exp": ahora + vence_en}
+        ).encode()
+    )
+    firma = hmac.new(
+        secreto.encode(), f"{header}.{claims}".encode(), hashlib.sha256
+    ).digest()
+    return f"{header}.{claims}.{_b64(firma)}"
+
+
 # evento como lo manda API Gateway (HTTP API, payload 2.0)
-def evento_api(body):
-    return {"body": json.dumps(body)}
+# con token manda Authorization Bearer
+def evento_api(body, token=None):
+    evento = {"body": json.dumps(body)}
+    if token:
+        evento["headers"] = {"authorization": f"Bearer {token}"}
+    return evento
 
 
 def leer_respuesta(resultado):

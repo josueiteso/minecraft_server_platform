@@ -1,15 +1,11 @@
 name: Create infrastructure
-
 on:
   workflow_dispatch:
-
 permissions:
   contents: read
-
 concurrency:
   group: aws-infra
   cancel-in-progress: false
-
 jobs:
   create:
     runs-on: ubuntu-latest

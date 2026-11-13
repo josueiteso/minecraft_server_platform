@@ -1,5 +1,8 @@
+import base64
+import json
+
 import pytest
-from conftest import cargar_lambda, evento_api, leer_respuesta
+from conftest import SECRETO_PRUEBA, cargar_lambda, evento_api, leer_respuesta
 from psycopg2 import errors
 
 login = cargar_lambda("login_user")
@@ -31,7 +34,8 @@ def test_faltan_datos_regresa_400(datos):
     assert body["error"] == "email y password son requeridos"
 
 
-def test_login_correcto_regresa_200(conectar, usuario_guardado):
+def test_login_correcto_regresa_200(conectar, usuario_guardado, monkeypatch):
+    monkeypatch.setattr(login, "get_jwt_secret", lambda: SECRETO_PRUEBA)
     _, cursor = conectar
     cursor.fetchone.return_value = usuario_guardado
 
@@ -44,6 +48,12 @@ def test_login_correcto_regresa_200(conectar, usuario_guardado):
     assert status == 200
     assert body["userId"] == "7"
     assert body["username"] == "steve_builder"
+    # el token es JWT (3 partes) y su "sub" es el id del usuario
+    partes = body["token"].split(".")
+    assert len(partes) == 3
+    claims = json.loads(base64.urlsafe_b64decode(partes[1] + "=="))
+    assert claims["sub"] == "7"
+    assert claims["exp"] > claims["iat"]
     # busca el email en minusculas
     assert cursor.execute.call_args.args[1] == ("steve@correo.com",)
 
