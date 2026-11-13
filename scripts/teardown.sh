@@ -9,6 +9,7 @@ LAMBDA_SG_NAME="minecraft-lambda-sg"
 DASHBOARD_NAME="minecraft-platform"
 ALARMS=("minecraft-lambda-errores" "minecraft-backups-fallidos")
 API_NAME="minecraft-servers-api"
+JWT_SECRET_NAME="minecraft-jwt-secret"
 
 ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 BACKUP_BUCKET="minecraft-backups-${ACCOUNT_ID}"
@@ -62,6 +63,7 @@ echo "Instancias EC2: ${INSTANCE_IDS:-(ninguna)}"
 echo "Alarmas CloudWatch: ${ALARMS[*]}"
 echo "Dashboard CloudWatch: $DASHBOARD_NAME"
 echo "Funciones Lambda (y sus log groups): ${LAMBDA_NAMES:-(ninguna)}"
+echo "Secreto de tokens: $JWT_SECRET_NAME"
 echo "VPC endpoints: ${ENDPOINT_IDS:-(ninguno)}"
 echo "Bucket S3 (con todo su contenido): $BACKUP_BUCKET"
 echo "Security groups: $LAMBDA_SG_NAME ($LAMBDA_SG_ID), $SG_NAME ($SERVERS_SG_ID)"
@@ -110,6 +112,13 @@ for FN in $LAMBDA_NAMES; do
   aws logs delete-log-group --log-group-name "/aws/lambda/$FN" --region "$REGION" 2>/dev/null || true
   echo "Lambda $FN eliminada."
 done
+
+# secreto de los tokens jwt
+if aws secretsmanager describe-secret --secret-id "$JWT_SECRET_NAME" --region "$REGION" >/dev/null 2>&1; then
+  aws secretsmanager delete-secret --secret-id "$JWT_SECRET_NAME" \
+    --force-delete-without-recovery --region "$REGION" >/dev/null
+  echo "Secreto $JWT_SECRET_NAME eliminado."
+fi
 
 # vpc endpoints
 if [ -n "$ENDPOINT_IDS" ]; then

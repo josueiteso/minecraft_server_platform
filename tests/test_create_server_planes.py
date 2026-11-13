@@ -1,12 +1,18 @@
 from unittest.mock import MagicMock
 
 import pytest
-from conftest import cargar_lambda, evento_api, leer_respuesta
+from conftest import (
+    SECRETO_PRUEBA,
+    cargar_lambda,
+    evento_api,
+    firmar_token,
+    leer_respuesta,
+)
 
 crear = cargar_lambda("create_server")
 
+TOKEN = firmar_token("1")
 DATOS = {
-    "userId": "1",
     "serverName": "Prueba",
     "minecraftVersion": "1.21.11",
     "gameMode": "survival",
@@ -20,6 +26,7 @@ def ec2(monkeypatch):
     cliente.run_instances.return_value = {"Instances": [{"InstanceId": "i-0abc12345"}]}
     monkeypatch.setattr(crear, "ec2_client", cliente)
     monkeypatch.setattr(crear, "get_security_group_id", lambda: "sg-123")
+    monkeypatch.setattr(crear, "get_jwt_secret", lambda: SECRETO_PRUEBA)
     monkeypatch.setattr(crear, "register_server", lambda *args: None)
     return cliente
 
@@ -34,7 +41,7 @@ def ec2(monkeypatch):
 )
 def test_cada_plan_usa_su_instancia_y_memoria(ec2, plan, instancia, memoria):
     status, body = leer_respuesta(
-        crear.lambda_handler(evento_api({**DATOS, "plan": plan}), None)
+        crear.lambda_handler(evento_api({**DATOS, "plan": plan}, TOKEN), None)
     )
 
     argumentos = ec2.run_instances.call_args.kwargs
@@ -46,7 +53,7 @@ def test_cada_plan_usa_su_instancia_y_memoria(ec2, plan, instancia, memoria):
 
 
 def test_sin_plan_usa_hierro(ec2):
-    status, _ = leer_respuesta(crear.lambda_handler(evento_api(DATOS), None))
+    status, _ = leer_respuesta(crear.lambda_handler(evento_api(DATOS, TOKEN), None))
 
     assert status == 202
     assert ec2.run_instances.call_args.kwargs["InstanceType"] == "t3.medium"
@@ -54,7 +61,7 @@ def test_sin_plan_usa_hierro(ec2):
 
 def test_plan_que_no_existe_regresa_400(ec2):
     status, body = leer_respuesta(
-        crear.lambda_handler(evento_api({**DATOS, "plan": "oro"}), None)
+        crear.lambda_handler(evento_api({**DATOS, "plan": "oro"}, TOKEN), None)
     )
 
     assert status == 400
@@ -70,8 +77,12 @@ def test_limite_de_jugadores_por_plan(ec2, plan, maximo):
     al_limite = {**DATOS, "plan": plan, "maxPlayers": maximo}
     de_mas = {**DATOS, "plan": plan, "maxPlayers": maximo + 1}
 
-    status_ok, _ = leer_respuesta(crear.lambda_handler(evento_api(al_limite), None))
-    status_error, body = leer_respuesta(crear.lambda_handler(evento_api(de_mas), None))
+    status_ok, _ = leer_respuesta(
+        crear.lambda_handler(evento_api(al_limite, TOKEN), None)
+    )
+    status_error, body = leer_respuesta(
+        crear.lambda_handler(evento_api(de_mas, TOKEN), None)
+    )
 
     assert status_ok == 202
     assert status_error == 400

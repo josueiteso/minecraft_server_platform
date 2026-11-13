@@ -1,15 +1,24 @@
 // Todas las llamadas al API Gateway pasan por aqui.
 // Cada funcion regresa { status, datos } con el codigo HTTP y el JSON de la respuesta.
 import { API_URL } from "./config.js";
+import { leerSesion, sesionExpirada } from "./comun.js";
 
 const MODO_EJEMPLO = API_URL === "";
 
 async function pedir(metodo, ruta, cuerpo) {
+  // si hay sesion, el token va en cada peticion
+  const token = leerSesion()?.token;
+  const headers = {};
+  if (cuerpo) headers["Content-Type"] = "application/json";
+  if (token) headers.Authorization = `Bearer ${token}`;
+
   const respuesta = await fetch(`${API_URL}${ruta}`, {
     method: metodo,
-    headers: cuerpo ? { "Content-Type": "application/json" } : undefined,
+    headers: Object.keys(headers).length ? headers : undefined,
     body: cuerpo ? JSON.stringify(cuerpo) : undefined,
   });
+  // 401 con sesion = el token vencio o es invalido. hay que volver a iniciar sesion
+  if (respuesta.status === 401 && token) sesionExpirada();
   let datos = {};
   try {
     datos = await respuesta.json();
@@ -40,8 +49,8 @@ export function listarServidores(userId) {
 // POST /servers -> create_server
 // plan: piedra, hierro o diamante. opUsername es opcional: si viene, el servidor se crea
 // con comandos para esa cuenta de Minecraft
-export function crearServidor(userId, serverName, minecraftVersion, gameMode, maxPlayers, opUsername, plan) {
-  const datos = { userId, serverName, minecraftVersion, gameMode, maxPlayers, plan };
+export function crearServidor(serverName, minecraftVersion, gameMode, maxPlayers, opUsername, plan) {
+  const datos = { serverName, minecraftVersion, gameMode, maxPlayers, plan };
   if (opUsername) datos.opUsername = opUsername;
   if (MODO_EJEMPLO) return ejemploCrear(datos);
   return pedir("POST", "/servers", datos);
@@ -77,7 +86,7 @@ async function ejemploLogin(email, password) {
   if (password === "incorrecta") {
     return { status: 401, datos: { error: "Credenciales invalidas" } };
   }
-  return { status: 200, datos: { userId: "1", username: email.split("@")[0] } };
+  return { status: 200, datos: { userId: "1", username: email.split("@")[0], token: "token-ejemplo" } };
 }
 
 // mismo formato que regresa list_servers

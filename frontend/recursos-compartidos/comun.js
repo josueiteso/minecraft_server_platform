@@ -5,13 +5,15 @@
 
 const CLAVE_SESION = "sesion";
 
-export function guardarSesion(userId, username) {
-  localStorage.setItem(CLAVE_SESION, JSON.stringify({ userId, username }));
+export function guardarSesion(userId, username, token) {
+  localStorage.setItem(CLAVE_SESION, JSON.stringify({ userId, username, token }));
 }
 
+// una sesion guardada sin token (de antes de que existiera) no sirve. se pide iniciar sesion de nuevo
 export function leerSesion() {
   try {
-    return JSON.parse(localStorage.getItem(CLAVE_SESION));
+    const sesion = JSON.parse(localStorage.getItem(CLAVE_SESION));
+    return sesion?.token ? sesion : null;
   } catch {
     return null;
   }
@@ -20,6 +22,12 @@ export function leerSesion() {
 export function cerrarSesion() {
   localStorage.removeItem(CLAVE_SESION);
   window.location.href = "../";
+}
+
+// el token vencio o ya no es valido (401), se manda a login
+export function sesionExpirada() {
+  localStorage.removeItem(CLAVE_SESION);
+  window.location.href = "../login/";
 }
 
 // ---------- Utilidades ----------

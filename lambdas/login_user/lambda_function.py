@@ -1,7 +1,9 @@
+import base64
 import hashlib
 import hmac
 import json
 import os
+import time
 from http import HTTPStatus
 
 import boto3
@@ -13,6 +15,11 @@ rds_client = boto3.client("rds", region_name=REGION)
 secrets_client = boto3.client("secretsmanager", region_name=REGION)
 
 DB_INSTANCE_ID = os.environ.get("DB_INSTANCE_ID", "minecraft-db-instance")
+
+# este es el secreto con el que se firman los tokens
+JWT_SECRET_ID = os.environ.get("JWT_SECRET_ID", "minecraft-jwt-secret")
+TOKEN_TTL_SECONDS = 12 * 60 * 60
+jwt_secret = None
 
 # mismo mensaje para email inexistente o password incorrecta, asi no se revela que cuentas existen
 INVALID_CREDENTIALS = "Email o password incorrectos"
@@ -78,6 +85,40 @@ def verify_password(password, stored_hash):
     return hmac.compare_digest(digest, expected)
 
 
+# se lee una vez por contenedor de lambda, no en cada peticion
+def get_jwt_secret():
+    global jwt_secret
+    if jwt_secret is None:
+        jwt_secret = secrets_client.get_secret_value(SecretId=JWT_SECRET_ID)[
+            "SecretString"
+        ]
+    return jwt_secret
+
+
+def b64url(data):
+    return base64.urlsafe_b64encode(data).rstrip(b"=").decode()
+
+
+# token JWT con el id del usuario en "sub"
+def create_token(user_id, username):
+    now = int(time.time())
+    header = {"alg": "HS256", "typ": "JWT"}
+    claims = {
+        "sub": str(user_id),
+        "username": username,
+        "iat": now,
+        "exp": now + TOKEN_TTL_SECONDS,
+    }
+    signing_input = ".".join(
+        b64url(json.dumps(part, separators=(",", ":")).encode())
+        for part in (header, claims)
+    )
+    signature = hmac.new(
+        get_jwt_secret().encode(), signing_input.encode(), hashlib.sha256
+    ).digest()
+    return f"{signing_input}.{b64url(signature)}"
+
+
 def find_user(email):
     conn = connect_db()
     try:
@@ -122,6 +163,7 @@ def lambda_handler(event, context):
                 "message": "Inicio de sesion correcto",
                 "userId": str(user_id),
                 "username": username,
+                "token": create_token(user_id, username),
             },
         )
 
