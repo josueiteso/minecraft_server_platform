@@ -126,7 +126,6 @@ function iniciarNuevoServidor() {
     aviso.hidden = false;
     try {
       const { status } = await crearServidor(
-        sesion.userId,
         nombreServidor,
         version.value,
         modo,

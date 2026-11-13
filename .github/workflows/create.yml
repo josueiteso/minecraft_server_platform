@@ -1,0 +1,38 @@
+name: Create infrastructure
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: aws-infra
+  cancel-in-progress: false
+
+jobs:
+  create:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: us-east-1
+      - name: verificar credenciales AWS
+        run: |
+          aws sts get-caller-identity || {
+            echo "::error::Credenciales invalidas o expiradas. Actualiza los 3 secrets del learner lab."
+            exit 1
+          }
+      - name: crear servicios
+        run: |
+          chmod +x ./scripts/*.sh
+          ./scripts/create_services.sh
+      - name: configurar red
+        run: ./scripts/setup_network.sh
+      - name: crear monitoreo
+        run: ./scripts/monitoring.sh

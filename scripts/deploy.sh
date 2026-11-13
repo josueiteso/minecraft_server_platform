@@ -10,11 +10,12 @@ ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 ROLE_ARN="arn:aws:iam::${ACCOUNT_ID}:role/LabRole"
 API_NAME="minecraft-servers-api"
+JWT_SECRET_NAME="minecraft-jwt-secret"
 
 # configuracion de todas las lambdas
 RUNTIME="python3.12"
 HANDLER="lambda_function.lambda_handler"
-ENV_VARS="Variables={DB_INSTANCE_ID=${DB_INSTANCE_IDENTIFIER},SECURITY_GROUP_NAME=minecraft-servers-sg}"
+ENV_VARS="Variables={DB_INSTANCE_ID=${DB_INSTANCE_IDENTIFIER},SECURITY_GROUP_NAME=minecraft-servers-sg,JWT_SECRET_ID=${JWT_SECRET_NAME}}"
 TIMEOUT=30 # timeout de 30s es tambien el maximo de API Gateway
 MEMORY_SIZE=256
 
@@ -25,7 +26,7 @@ LAMBDA_SG_ID=$(aws ec2 describe-security-groups --region "$REGION" \
   --filters "Name=group-name,Values=$LAMBDA_SG_NAME" "Name=vpc-id,Values=$VPC_ID" \
   --query 'SecurityGroups[0].GroupId' --output text)
 if [ "$LAMBDA_SG_ID" = "None" ]; then
-  echo "No existe el SecurityGroup '$LAMBDA_SG_NAME'. Ejecuta primero ./setup_networks.sh"
+  echo "No existe el SecurityGroup '$LAMBDA_SG_NAME'. Ejecuta primero ./setup_network.sh"
   exit 1
 fi
 SUBNET_IDS=$(aws ec2 describe-subnets --filters "Name=vpc-id,Values=$VPC_ID" --region "$REGION" \
@@ -37,6 +38,16 @@ API_ID=$(aws apigatewayv2 get-apis --region "$REGION" \
 if [ "$API_ID" = "None" ] || [ -z "$API_ID" ]; then
   echo "No existe la API Gateway. Ejecuta primero create_services.sh"
   exit 1
+fi
+
+# secreto con el que login_user firma los tokens de sesion y create_server los verifica
+# si ya existe se deja igual para no cerrar las sesiones abiertas
+if ! aws secretsmanager describe-secret --secret-id "$JWT_SECRET_NAME" --region "$REGION" > /dev/null 2>&1; then
+  echo "Creando el secreto '$JWT_SECRET_NAME'..."
+  aws secretsmanager create-secret --name "$JWT_SECRET_NAME" --region "$REGION" \
+    --description "Clave para firmar los tokens de sesion de la plataforma" \
+    --secret-string "$(aws secretsmanager get-random-password --password-length 64 \
+      --exclude-punctuation --region "$REGION" --query RandomPassword --output text)" > /dev/null
 fi
 
 # para crear los endpoints para cada lambda

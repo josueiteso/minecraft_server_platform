@@ -78,7 +78,7 @@ export function iniciarFormulario({ formulario, reglas, textoCargando, enviar, s
     try {
       const { status, datos } = await enviar(valores);
       if (status === statusOk) {
-        guardarSesion(datos.userId, datos.username);
+        guardarSesion(datos.userId, datos.username, datos.token);
         window.location.href = "../servidores/";
         return;
       }

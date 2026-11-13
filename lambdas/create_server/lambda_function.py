@@ -1,7 +1,10 @@
 import base64
+import hashlib
+import hmac
 import json
 import os
 import re
+import time
 from http import HTTPStatus
 
 import boto3
@@ -43,6 +46,8 @@ fi
 """
 
 HEADERS = {"Content-Type": "application/json"}
+JWT_SECRET_ID = os.environ.get("JWT_SECRET_ID", "minecraft-jwt-secret")
+jwt_secret = None
 
 
 def get_security_group_id():
@@ -70,6 +75,71 @@ def get_rds_credentials():
         "password": secret["password"],
         "dbname": instance["DBName"],
     }
+
+
+class AuthError(Exception):
+    """Token ausente, mal formado, con firma incorrecta o vencido."""
+
+
+# se lee una vez por contenedor de lambda, no en cada peticion
+def get_jwt_secret():
+    global jwt_secret
+    if jwt_secret is None:
+        jwt_secret = secrets_client.get_secret_value(SecretId=JWT_SECRET_ID)[
+            "SecretString"
+        ]
+    return jwt_secret
+
+
+def b64url_decode(text):
+    return base64.urlsafe_b64decode(text + "=" * (-len(text) % 4))
+
+
+# saca el token del header "Authorization: Bearer <token>"
+def get_bearer_token(event):
+    headers = event.get("headers") or {}
+    for name, value in headers.items():
+        if name.lower() == "authorization":
+            scheme, _, token = str(value).strip().partition(" ")
+            if scheme.lower() == "bearer" and token.strip():
+                return token.strip()
+    raise AuthError("Falta el token de autenticacion")
+
+
+# valida el token que emitio login_user y regresa el id del usuario
+def get_authenticated_user_id(event):
+    parts = get_bearer_token(event).split(".")
+    if len(parts) != 3:
+        raise AuthError("Token mal formado")
+    header_b64, claims_b64, signature_b64 = parts
+
+    try:
+        header = json.loads(b64url_decode(header_b64))
+        # solo se acepta HS256
+        if not isinstance(header, dict) or header.get("alg") != "HS256":
+            raise AuthError("Algoritmo no soportado")
+
+        expected = hmac.new(
+            get_jwt_secret().encode(),
+            f"{header_b64}.{claims_b64}".encode(),
+            hashlib.sha256,
+        ).digest()
+        if not hmac.compare_digest(expected, b64url_decode(signature_b64)):
+            raise AuthError("Firma invalida")
+
+        claims = json.loads(b64url_decode(claims_b64))
+    except ValueError as err:  # base64 o JSON invalido
+        raise AuthError("Token mal formado") from err
+
+    if not isinstance(claims, dict):
+        raise AuthError("Token mal formado")
+    exp = claims.get("exp")
+    if isinstance(exp, bool) or not isinstance(exp, (int, float)) or exp <= time.time():
+        raise AuthError("Token vencido")
+    user_id = claims.get("sub")
+    if not isinstance(user_id, str) or not user_id:
+        raise AuthError("Token sin usuario")
+    return user_id
 
 
 def response(status, body):
@@ -189,6 +259,14 @@ systemctl enable --now minecraft
 
 def lambda_handler(event, context):
     try:
+        # el dueño del servidor es siempre el usuario del token
+        try:
+            user_id = get_authenticated_user_id(event)
+        except AuthError as err:
+            print(f"Peticion no autenticada: {err}")
+            return response(
+                HTTPStatus.UNAUTHORIZED, {"error": "Sesion invalida o expirada"}
+            )
         try:
             payload = parse_event(event)
         except (ValueError, TypeError):  # JSONDecodeError hereda de ValueError
@@ -196,7 +274,6 @@ def lambda_handler(event, context):
                 HTTPStatus.BAD_REQUEST, {"error": "El body debe ser un JSON valido"}
             )
 
-        user_id = payload.get("userId")
         server_name = str(payload.get("serverName", "mc-server"))
         mc_version = str(payload.get("minecraftVersion", "1.21.10"))
         game_mode = str(payload.get("gameMode", "survival")).lower()
@@ -206,10 +283,6 @@ def lambda_handler(event, context):
         op_username = str(payload.get("opUsername") or "").strip()
 
         # validacion de parametros
-        if not user_id:
-            return response(
-                HTTPStatus.BAD_REQUEST, {"error": "El campo userId es requerido"}
-            )
         if not re.fullmatch(r"\d+\.\d+(\.\d+)?", mc_version):
             return response(
                 HTTPStatus.BAD_REQUEST, {"error": "minecraftVersion invalida"}
