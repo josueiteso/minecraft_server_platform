@@ -5,18 +5,27 @@ import json
 import os
 import re
 import time
+from contextlib import contextmanager
 from http import HTTPStatus
 
 import boto3
 import psycopg2
+from botocore.config import Config
+from botocore.exceptions import ClientError
 
 REGION = "us-east-1"
 ec2_client = boto3.client("ec2", region_name=REGION)
 rds_client = boto3.client("rds", region_name=REGION)
 secrets_client = boto3.client("secretsmanager", region_name=REGION)
+cloudwatch_client = boto3.client(
+    "cloudwatch",
+    region_name=REGION,
+    config=Config(connect_timeout=2, read_timeout=2, retries={"max_attempts": 0}),
+)
 
 DB_INSTANCE_ID = os.environ.get("DB_INSTANCE_ID", "minecraft-db-instance")
 SECURITY_GROUP_NAME = os.environ.get("SECURITY_GROUP_NAME", "minecraft-servers-sg")
+METRICS_NAMESPACE = os.environ.get("METRICS_NAMESPACE", "MinecraftPlatform")
 
 # planes: tipo de instancia, memoria para Java (deja espacio al sistema) y maximo de jugadores.
 # el maximo es lo que aguanta cada maquina sin lag en un servidor vanilla con 2 vCPU
@@ -48,6 +57,50 @@ fi
 HEADERS = {"Content-Type": "application/json"}
 JWT_SECRET_ID = os.environ.get("JWT_SECRET_ID", "minecraft-jwt-secret")
 jwt_secret = None
+
+
+# instrumentacion de metricas
+class Metrics:
+    def __init__(self):
+        self.data = []
+
+    def _add(self, name, value, unit, dims):
+        self.data.append({"MetricName": name, "Value": value, "Unit": unit})
+        if dims:
+            self.data.append(
+                {
+                    "MetricName": name,
+                    "Value": value,
+                    "Unit": unit,
+                    "Dimensions": [
+                        {"Name": k, "Value": str(v)} for k, v in dims.items()
+                    ],
+                }
+            )
+
+    def count(self, name, value=1, **dims):
+        self._add(name, value, "Count", dims)
+
+    def timing(self, name, milliseconds):
+        self._add(name, milliseconds, "Milliseconds", {})
+
+    @contextmanager
+    def timer(self, name):
+        start = time.perf_counter()
+        try:
+            yield
+        finally:
+            self.timing(name, (time.perf_counter() - start) * 1000)
+
+    def flush(self):
+        try:
+            # put_metric_data acepta hasta 1000 datos por llamada
+            for i in range(0, len(self.data), 1000):
+                cloudwatch_client.put_metric_data(
+                    Namespace=METRICS_NAMESPACE, MetricData=self.data[i : i + 1000]
+                )
+        except Exception as err:  # noqa: BLE001
+            print(f"No se pudieron publicar metricas: {type(err).__name__}: {err}")
 
 
 def get_security_group_id():
@@ -257,7 +310,7 @@ systemctl enable --now minecraft
 """
 
 
-def lambda_handler(event, context):
+def handle_request(event, metrics):
     try:
         # el dueño del servidor es siempre el usuario del token
         try:
@@ -323,36 +376,55 @@ def lambda_handler(event, context):
             plan["memory"],
         )
 
-        ec2_response = ec2_client.run_instances(
-            ImageId="ami-0c7217cdde317cfec",  # ami de ubuntu server en us-east-1
-            InstanceType=plan["instanceType"],
-            MinCount=1,
-            MaxCount=1,
-            UserData=user_data,
-            SecurityGroupIds=[get_security_group_id()],
-            TagSpecifications=[
-                {
-                    "ResourceType": "instance",
-                    "Tags": [
-                        {"Key": "Name", "Value": server_name},
-                        {"Key": "OwnerId", "Value": str(user_id)},
-                        {"Key": "Plan", "Value": plan_name},
+        security_group_id = get_security_group_id()
+
+        try:
+            with metrics.timer("Ec2LaunchLatency"):
+                ec2_response = ec2_client.run_instances(
+                    ImageId="ami-0c7217cdde317cfec",  # ami de ubuntu server en us-east-1
+                    InstanceType=plan["instanceType"],
+                    MinCount=1,
+                    MaxCount=1,
+                    UserData=user_data,
+                    SecurityGroupIds=[security_group_id],
+                    TagSpecifications=[
+                        {
+                            "ResourceType": "instance",
+                            "Tags": [
+                                {"Key": "Name", "Value": server_name},
+                                {"Key": "OwnerId", "Value": str(user_id)},
+                                {"Key": "Plan", "Value": plan_name},
+                            ],
+                        }
                     ],
-                }
-            ],
-        )
+                )
+        except ClientError as err:
+            metrics.count(
+                "Ec2LaunchFailures", ErrorCode=err.response["Error"]["Code"]
+            )  # ej. InsufficientInstanceCapacity, VcpuLimitExceeded, RequestLimitExceeded
+            raise
         instance_id = ec2_response["Instances"][0]["InstanceId"]
         print(f"EC2 creada: {instance_id}")
 
         try:
-            register_server(user_id, instance_id, server_name)
+            with metrics.timer("DbRegisterLatency"):
+                register_server(user_id, instance_id, server_name)
         except Exception as db_err:
+            metrics.count("DbRegisterFailures")
             # evita instancias sin registro
             print(
                 f"Fallo al registrar en base de datos, terminando {instance_id}: {db_err}"
             )
-            ec2_client.terminate_instances(InstanceIds=[instance_id])
+            try:
+                ec2_client.terminate_instances(InstanceIds=[instance_id])
+                metrics.count("OrphanRollbacks")
+            except Exception as term_err:  # noqa: BLE001
+                # instancia huerfana corriendo y cobrando. requiere accion manual
+                metrics.count("RollbackFailures")
+                print(f"ROLLBACK FALLIDO, instancia huerfana {instance_id}: {term_err}")
             raise
+
+        metrics.count("ServersCreated", Plan=plan_name)
 
         return response(
             HTTPStatus.ACCEPTED,
@@ -370,3 +442,27 @@ def lambda_handler(event, context):
         return response(
             HTTPStatus.INTERNAL_SERVER_ERROR, {"error": "Internal Server Error"}
         )
+
+
+def lambda_handler(event, context):
+    metrics = Metrics()
+    started = time.perf_counter()
+    metrics.count("Requests")
+    result = None
+    try:
+        result = handle_request(event, metrics)
+        return result
+    finally:
+        status = result["statusCode"] if result else 500
+        if status < 300:
+            metrics.count("Success")
+        elif status < 500:
+            metrics.count("ClientErrors")
+            if status == 401:
+                metrics.count("AuthFailures")
+            elif status == 400:
+                metrics.count("ValidationFailures")
+        else:
+            metrics.count("ServerErrors")
+        metrics.timing("CreateLatency", (time.perf_counter() - started) * 1000)
+        metrics.flush()

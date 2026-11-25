@@ -63,10 +63,9 @@ export function controlarServidor(userId, serverId, action) {
 }
 
 // DELETE /servers?userId=&serverId= -> delete_server (termina la instancia y la quita de la lista)
-export function borrarServidor(userId, serverId) {
+export function borrarServidor(serverId) {
   if (MODO_EJEMPLO) return ejemploBorrar(serverId);
-  const query = `userId=${encodeURIComponent(userId)}&serverId=${encodeURIComponent(serverId)}`;
-  return pedir("DELETE", `/servers?${query}`);
+  return pedir("DELETE", `/servers?serverId=${encodeURIComponent(serverId)}`);
 }
 
 // ---------- Datos de ejemplo (cuando config.js no tiene URL) ----------

@@ -2,7 +2,7 @@ from unittest.mock import MagicMock
 
 import pytest
 from botocore.exceptions import ClientError
-from conftest import cargar_lambda, leer_respuesta
+from conftest import SECRETO_PRUEBA, cargar_lambda, firmar_token, leer_respuesta
 from psycopg2 import errors
 
 borrar = cargar_lambda("delete_server")
@@ -11,8 +11,16 @@ SERVER_ID = "i-0309ed93dd6aec9af"
 
 
 def evento_delete(user_id, server_id):
-    # DELETE /servers?userId=...&serverId=... como lo manda API Gateway
-    return {"queryStringParameters": {"userId": user_id, "serverId": server_id}}
+    # DELETE /servers?serverId=... como lo manda API Gateway; el usuario va en el token
+    return {
+        "headers": {"authorization": f"Bearer {firmar_token(user_id)}"},
+        "queryStringParameters": {"serverId": server_id},
+    }
+
+
+@pytest.fixture(autouse=True)
+def secreto(monkeypatch):
+    monkeypatch.setattr(borrar, "get_jwt_secret", lambda: SECRETO_PRUEBA)
 
 
 @pytest.fixture
@@ -38,7 +46,6 @@ def error_ec2(codigo):
 @pytest.mark.parametrize(
     "user_id, server_id, mensaje",
     [
-        ("", SERVER_ID, "El campo userId es requerido"),
         ("1", "", "serverId invalido"),
         ("1", "i-123; DROP TABLE servers", "serverId invalido"),
     ],
