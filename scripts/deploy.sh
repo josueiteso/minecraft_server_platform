@@ -16,7 +16,7 @@ JWT_SECRET_NAME="minecraft-jwt-secret"
 RUNTIME="python3.12"
 HANDLER="lambda_function.lambda_handler"
 ENV_VARS="Variables={DB_INSTANCE_ID=${DB_INSTANCE_IDENTIFIER},SECURITY_GROUP_NAME=minecraft-servers-sg,JWT_SECRET_ID=${JWT_SECRET_NAME}}"
-TIMEOUT=30 # timeout de 30s es tambien el maximo de API Gateway
+TIMEOUT=25 # con 25 segundos de timeout tenemos margen para que la Lambda responda o falle con un error legible
 MEMORY_SIZE=256
 
 # red: VPC de la RDS, SG de las lambdas y hasta 3 subnets

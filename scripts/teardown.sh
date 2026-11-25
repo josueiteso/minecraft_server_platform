@@ -6,13 +6,14 @@ REGION="us-east-1"
 DB_INSTANCE_IDENTIFIER="minecraft-db-instance"
 SG_NAME="minecraft-servers-sg"
 LAMBDA_SG_NAME="minecraft-lambda-sg"
-DASHBOARD_NAME="minecraft-platform"
-ALARMS=("minecraft-lambda-errores" "minecraft-backups-fallidos")
+MONITORING_PREFIX="minecraft-"
+SNS_TOPIC_NAME="minecraft-alerts"
 API_NAME="minecraft-servers-api"
 JWT_SECRET_NAME="minecraft-jwt-secret"
 
 ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 BACKUP_BUCKET="minecraft-backups-${ACCOUNT_ID}"
+FRONTEND_BUCKET="minecraft-frontend-${ACCOUNT_ID}"
 
 sg_id() {
   aws ec2 describe-security-groups --region "$REGION" \
@@ -44,6 +45,20 @@ if [ "$SERVERS_SG_ID" != "None" ]; then
     --query 'Reservations[].Instances[].InstanceId' --output text)
 fi
 
+# alarmas y dashboards de cloudwatch
+ALARM_NAMES=$(aws cloudwatch describe-alarms --region "$REGION" \
+  --alarm-name-prefix "$MONITORING_PREFIX" \
+  --query 'MetricAlarms[].AlarmName' --output text | tr '\t' ' ')
+DASHBOARD_NAMES=$(aws cloudwatch list-dashboards --region "$REGION" \
+  --dashboard-name-prefix "$MONITORING_PREFIX" \
+  --query 'DashboardEntries[].DashboardName' --output text | tr '\t' ' ')
+
+# topic sns de las alarmas (si no existe, queda vacio y se omite)
+SNS_TOPIC_ARN="arn:aws:sns:${REGION}:${ACCOUNT_ID}:${SNS_TOPIC_NAME}"
+if ! aws sns get-topic-attributes --topic-arn "$SNS_TOPIC_ARN" --region "$REGION" >/dev/null 2>&1; then
+  SNS_TOPIC_ARN=""
+fi
+
 # describe-vpc-endpoints no soporta filtrar por group-id, asi que se filtra del lado del cliente
 endpoints_of_lambda_sg() {
   aws ec2 describe-vpc-endpoints --region "$REGION" \
@@ -60,12 +75,14 @@ echo "Se buscaran y se eliminaran los recursos relevantes a la aplicacion en $RE
 echo "API Gateway: $API_NAME (${API_IDS:-ninguna})"
 echo "Instancia RDS: $DB_INSTANCE_IDENTIFIER"
 echo "Instancias EC2: ${INSTANCE_IDS:-(ninguna)}"
-echo "Alarmas CloudWatch: ${ALARMS[*]}"
-echo "Dashboard CloudWatch: $DASHBOARD_NAME"
+echo "Alarmas CloudWatch (prefijo $MONITORING_PREFIX): ${ALARM_NAMES:-(ninguna)}"
+echo "Dashboards CloudWatch (prefijo $MONITORING_PREFIX): ${DASHBOARD_NAMES:-(ninguno)}"
+echo "Topic SNS (y sus suscripciones): ${SNS_TOPIC_ARN:-(ninguno)}"
 echo "Funciones Lambda (y sus log groups): ${LAMBDA_NAMES:-(ninguna)}"
 echo "Secreto de tokens: $JWT_SECRET_NAME"
 echo "VPC endpoints: ${ENDPOINT_IDS:-(ninguno)}"
 echo "Bucket S3 (con todo su contenido): $BACKUP_BUCKET"
+echo "Bucket S3 del frontend (con todo su contenido): $FRONTEND_BUCKET"
 echo "Security groups: $LAMBDA_SG_NAME ($LAMBDA_SG_ID), $SG_NAME ($SERVERS_SG_ID)"
 echo "Eliminando..."
 echo
@@ -101,10 +118,22 @@ if [ -n "$INSTANCE_IDS" ]; then
   echo "Instancias EC2 eliminadas."
 fi
 
-# cloudwatch
-aws cloudwatch delete-alarms --region "$REGION" --alarm-names "${ALARMS[@]}"
-aws cloudwatch delete-dashboards --region "$REGION" --dashboard-names "$DASHBOARD_NAME"
-echo "Alarmas y dashboard eliminados."
+# cloudwatch (delete-alarms acepta hasta 100 nombres por llamada; se envian de 50 en 50)
+if [ -n "$ALARM_NAMES" ]; then
+  # shellcheck disable=SC2086
+  printf '%s\n' $ALARM_NAMES | xargs -n 50 aws cloudwatch delete-alarms --region "$REGION" --alarm-names
+fi
+if [ -n "$DASHBOARD_NAMES" ]; then
+  # shellcheck disable=SC2086
+  aws cloudwatch delete-dashboards --region "$REGION" --dashboard-names $DASHBOARD_NAMES
+fi
+echo "Alarmas y dashboards eliminados."
+
+# topic sns (al borrarlo se eliminan tambien sus suscripciones)
+if [ -n "$SNS_TOPIC_ARN" ]; then
+  aws sns delete-topic --topic-arn "$SNS_TOPIC_ARN" --region "$REGION"
+  echo "Topic SNS $SNS_TOPIC_NAME eliminado."
+fi
 
 # lambdas (y sus log groups)
 for FN in $LAMBDA_NAMES; do
@@ -132,6 +161,11 @@ if [ -n "$ENDPOINT_IDS" ]; then
 fi
 
 # s3
+if aws s3api head-bucket --bucket "$FRONTEND_BUCKET" 2>/dev/null; then
+  aws s3 rb "s3://${FRONTEND_BUCKET}" --force >/dev/null
+  echo "Bucket $FRONTEND_BUCKET eliminado."
+fi
+
 if aws s3api head-bucket --bucket "$BACKUP_BUCKET" 2>/dev/null; then
   aws s3 rb "s3://${BACKUP_BUCKET}" --force >/dev/null
   echo "Bucket $BACKUP_BUCKET eliminado."

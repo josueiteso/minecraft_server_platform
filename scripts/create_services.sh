@@ -38,6 +38,26 @@ else
   echo "Bucket de respaldos creado: ${BACKUP_BUCKET}"
 fi
 
+# crea el topico SNS al que notifican las alarmas de monitoring.sh
+# el nombre debe coincidir con el que usan monitoring.sh y teardown.sh
+SNS_TOPIC_NAME="minecraft-alerts"
+if SNS_TOPIC_ARN=$(aws sns create-topic --name "${SNS_TOPIC_NAME}" --region "${REGION}" \
+  --query 'TopicArn' --output text 2>/dev/null); then
+  echo "Topic SNS de alertas: ${SNS_TOPIC_ARN}"
+  if [ -n "${ALERT_EMAIL:-}" ]; then
+    if aws sns subscribe --topic-arn "${SNS_TOPIC_ARN}" --protocol email \
+      --notification-endpoint "${ALERT_EMAIL}" --region "${REGION}" > /dev/null; then
+      echo "Se envio un correo de confirmacion a ${ALERT_EMAIL}. Haz clic en el enlace para activar las alertas."
+    else
+      echo "AVISO: no se pudo crear la suscripcion de correo."
+    fi
+  else
+    echo "ALERT_EMAIL no esta definido: el topic no tiene suscriptores. Puedes suscribirte despues desde la consola de SNS."
+  fi
+else
+  echo "AVISO: no se pudo crear el topic SNS ${SNS_TOPIC_NAME}. Las alarmas se crearan sin notificaciones."
+fi
+
 DB_INSTANCE_IDENTIFIER="minecraft-db-instance"
 
 if aws rds describe-db-instances \

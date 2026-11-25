@@ -182,7 +182,7 @@ function iniciarDetalle() {
     $("borrar").innerHTML = '<span aria-hidden="true">✕</span> Borrando…';
     pintar();
     try {
-      const { status } = await borrarServidor(sesion.userId, serverId);
+      const { status } = await borrarServidor(serverId);
       if (status === 200) {
         window.location.href = "../servidores/";
         return;
