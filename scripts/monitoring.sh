@@ -489,11 +489,11 @@ cat > "$BODY_FILE" << JSON
       "type": "metric", "x": 12, "y": 11, "width": 12, "height": 6,
       "properties": {
         "title": "Servidores creados por plan",
-        "region": "$REGION", "view": "timeSeries", "stacked": true, "period": 3600, "stat": "Sum",
+        "region": "$REGION", "view": "bar", "setPeriodToTimeRange": true, "stat": "Sum",
         "metrics": [
-          ["$NAMESPACE", "ServersCreated", "Plan", "piedra"],
-          ["$NAMESPACE", "ServersCreated", "Plan", "hierro"],
-          ["$NAMESPACE", "ServersCreated", "Plan", "diamante"]
+          ["$NAMESPACE", "ServersCreated", "Plan", "piedra", {"label": "piedra"}],
+          ["$NAMESPACE", "ServersCreated", "Plan", "hierro", {"label": "hierro"}],
+          ["$NAMESPACE", "ServersCreated", "Plan", "diamante", {"label": "diamante"}]
         ]
       }
     },

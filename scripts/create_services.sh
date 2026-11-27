@@ -4,6 +4,18 @@
 
 set -e
 
+# carga las variables locales de .env (ALERT_EMAIL). la plantilla es .env.example.
+# una variable ya definida en el entorno (ej. un secret de CI) tiene prioridad sobre el .env
+ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+if [ -f "${ROOT_DIR}/.env" ]; then
+  ENV_ALERT_EMAIL="${ALERT_EMAIL:-}"
+  # shellcheck source=/dev/null
+  source "${ROOT_DIR}/.env"
+  ALERT_EMAIL="${ENV_ALERT_EMAIL:-${ALERT_EMAIL:-}}"
+fi
+# quita el retorno de carro si el .env se guardo con finales de linea de Windows
+ALERT_EMAIL="${ALERT_EMAIL//$'\r'/}"
+
 REGION="us-east-1"
 SG_NAME="minecraft-servers-sg"
 API_NAME="minecraft-servers-api"
@@ -52,7 +64,7 @@ if SNS_TOPIC_ARN=$(aws sns create-topic --name "${SNS_TOPIC_NAME}" --region "${R
       echo "AVISO: no se pudo crear la suscripcion de correo."
     fi
   else
-    echo "ALERT_EMAIL no esta definido: el topic no tiene suscriptores. Puedes suscribirte despues desde la consola de SNS."
+    echo "ALERT_EMAIL no esta definido (ver .env.example): el topic no tiene suscriptores. Puedes suscribirte despues desde la consola de SNS."
   fi
 else
   echo "AVISO: no se pudo crear el topic SNS ${SNS_TOPIC_NAME}. Las alarmas se crearan sin notificaciones."

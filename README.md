@@ -2,15 +2,30 @@
 
 Plataforma web basada en AWS que maneja la creacion, administracion y alojamiento de servidores de Minecraft Java Edition.
 
-Asegurate de tener Minecraft Java instalado y AWS CLI configurado.
+## Prerequisitos
 
-## Documentacion por flujo
+1. Terminal Unix o Unix-like. Si usas Windows puedes usar WSL2 con Ubuntu o la distribucion de tu preferencia.
 
-- [Flujo 1: registro, inicio de sesion y panel de servidores](README_flujo1.md)
+2. AWS CLI instalada y configurada en tu terminal.
 
-## Como crear el servidor de minecraft.
+   https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
 
-**1. Clona el repositoria y navega a su directorio**
+   https://docs.aws.amazon.com/cli/latest/userguide/getting-started-quickstart.html
+
+   Tambien instala las utilidades necesarias: zip, curl, jq.
+
+3. Minecraft Java Edition.
+
+## Documentacion
+
+- [Documentacion de la plataforma: infraestructura, Lambdas, frontend, pruebas y monitoreo](README_doc.md)
+
+## Quick start
+
+**(Opcional)** Si quieres recibir las alertas del monitoreo por correo, crea un .env a partir de la plantilla .env.example y escribe tu correo en ALERT_EMAIL
+
+**1. Clona el repositorio y navega a su directorio**
+
 ```bash
 https://github.com/josueiteso/minecraft_server_platform
 cd minecraft_server_platform
@@ -19,64 +34,42 @@ cd minecraft_server_platform
 **2. Monta la infraestructura**
 
 Otorga permisos de ejecucion a los scripts:
+
 ```bash
 chmod +x ./scripts/*.sh
 ```
+
 Y ejecuta:
+
 ```bash
 ./scripts/create_services.sh
 ./scripts/setup_network.sh
 ./scripts/monitoring.sh
 ```
 
-**3. Despliega la lambda y las rutas de la API Gateway**
+**3. Despliega la lambda, las rutas de la API Gateway y el frontend**
+
 ```bash
 ./scripts/deploy.sh
+./scripts/deploy_frontend.sh
 ```
 
-Guarda la URL que se muestre para la API.
+Listo. Ya puedes acceder al frontend mediante la URL dada por `deploy_frontend.sh`.
 
-**4. Crea el servidor**
+## Como conectarse al servidor.
 
-Desde Postman o cURL (en otra terminal) prueba crear un servidor:
+Una ves hayas creado tu servidor y que se haya inicializado:
 
-```POST /servers```
-
-Body esperado:
-
-```
-{
-    "userId": <id_usuario>,
-    "serverName": <nombre_del_servidor>,
-    "minecraftVersion": <version_de_minecraft>,
-    "gameMode": <modo_de_juego>,
-    "maxPlayers": <num_jugadores>
-}
-```
-
-Ejemplo:
-
-```bash
-curl -i -X POST "<API_URL>/servers" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "userId": "user123",
-    "serverName": "soy un server",
-    "minecraftVersion": "1.21.10",
-    "gameMode": "creative",
-    "maxPlayers": 5
-  }'
-```
-
-Tu servidor deberia montarse. Espera a que la instancia de EC2 se incialize, puede tardar unos minutos.
-
-**5. Conectate al servidor**
-
-Abre Minecraft. Ve a Multiplayer -> Add Server. Pega la IP publica de la instancia de EC2 en Server Address y has click en "Done".
+1. Abre Minecraft. Asegurate que la version de tu instalacion coincida con la del servidor que creaste.
+2. Ve a Multiplayer -> Add Server.
+3. Pega la IP del servidor en Server Address.
+4. Has click en "Done".
 
 Listo. Ya puedes conectarte y jugar.
 
-**6. Limpiar**
+## Limpiar recursos
+
+Ejecuta
 
 ```bash
 ./scripts/teardown.sh
