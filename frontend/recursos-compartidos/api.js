@@ -56,10 +56,10 @@ export function crearServidor(serverName, minecraftVersion, gameMode, maxPlayers
   return pedir("POST", "/servers", datos);
 }
 
-// POST /servers/control -> server_control (action: start, stop, backup o status)
-export function controlarServidor(userId, serverId, action) {
+// POST /servers/control -> server_control (action: start, stop o status); el usuario va en el token
+export function controlarServidor(serverId, action) {
   if (MODO_EJEMPLO) return ejemploControl(serverId, action);
-  return pedir("POST", "/servers/control", { userId, serverId, action });
+  return pedir("POST", "/servers/control", { serverId, action });
 }
 
 // DELETE /servers?userId=&serverId= -> delete_server (termina la instancia y la quita de la lista)
@@ -200,9 +200,9 @@ async function ejemploControl(serverId, action) {
     if (servidor.status !== "running") {
       return { status: 409, datos: { error: `El servidor esta en estado '${servidor.status}'` } };
     }
-    await esperar(2500); // respaldo antes de apagar
+    await esperar(800);
     guardarCambio(serverId, { status: "stopping" });
-    return { status: 200, datos: { message: "Respaldo guardado y servidor apagandose", status: "stopping" } };
+    return { status: 200, datos: { message: "Servidor apagandose", status: "stopping" } };
   }
   if (action === "backup") {
     if (servidor.status !== "running") {
