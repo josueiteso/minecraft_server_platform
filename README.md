@@ -2,27 +2,30 @@
 
 Plataforma web basada en AWS que maneja la creacion, administracion y alojamiento de servidores de Minecraft Java Edition.
 
-## Requisitos
+## Prerequisitos
 
 1. Terminal Unix o Unix-like. Si usas Windows puedes usar WSL2 con Ubuntu o la distribucion de tu preferencia.
 
 2. AWS CLI instalada y configurada en tu terminal.
-   
-    https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
 
-    https://docs.aws.amazon.com/cli/latest/userguide/getting-started-quickstart.html
+   https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
 
-   Tambien instala las utilidades necesarias: zip, curl,  jq.
+   https://docs.aws.amazon.com/cli/latest/userguide/getting-started-quickstart.html
 
-4. Minecraft Java Edition.
+   Tambien instala las utilidades necesarias: zip, curl, jq.
 
-## Documentacion por flujo
+3. Minecraft Java Edition.
 
-- [Flujo 1: registro, inicio de sesion y panel de servidores](README_flujo1.md)
+## Documentacion
+
+- [Documentacion de la plataforma: infraestructura, Lambdas, frontend, pruebas y monitoreo](README_doc.md)
 
 ## Quick start
 
+**(Opcional)** Si quieres recibir las alertas del monitoreo por correo, crea un .env a partir de la plantilla .env.example y escribe tu correo en ALERT_EMAIL
+
 **1. Clona el repositorio y navega a su directorio**
+
 ```bash
 https://github.com/josueiteso/minecraft_server_platform
 cd minecraft_server_platform
@@ -31,10 +34,13 @@ cd minecraft_server_platform
 **2. Monta la infraestructura**
 
 Otorga permisos de ejecucion a los scripts:
+
 ```bash
 chmod +x ./scripts/*.sh
 ```
+
 Y ejecuta:
+
 ```bash
 ./scripts/create_services.sh
 ./scripts/setup_network.sh
@@ -42,16 +48,17 @@ Y ejecuta:
 ```
 
 **3. Despliega la lambda, las rutas de la API Gateway y el frontend**
+
 ```bash
 ./scripts/deploy.sh
 ./scripts/deploy_frontend.sh
 ```
 
-Listo. Ya puedes acceder al frontend mediante la URL dada por ```deploy_frontend.sh```. 
+Listo. Ya puedes acceder al frontend mediante la URL dada por `deploy_frontend.sh`.
 
 ## Como conectarse al servidor.
 
-Una ves hayas creado tu servidor y que este activo:
+Una ves hayas creado tu servidor y que se haya inicializado:
 
 1. Abre Minecraft. Asegurate que la version de tu instalacion coincida con la del servidor que creaste.
 2. Ve a Multiplayer -> Add Server.

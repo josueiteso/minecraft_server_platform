@@ -25,6 +25,8 @@ jobs:
             exit 1
           }
       - name: crear servicios
+        env:
+          ALERT_EMAIL: ${{ secrets.ALERT_EMAIL }}
         run: |
           chmod +x ./scripts/*.sh
           ./scripts/create_services.sh
