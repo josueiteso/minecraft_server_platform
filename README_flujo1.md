@@ -285,3 +285,23 @@ Al crear un servidor el usuario elige un plan; `create_server` lo recibe como `p
 | Diamante | `t3.large` | 8 GB | 6 GB | hasta 30 | $0.088/h |
 
 El costo es el precio por hora de la instancia en us-east-1 (Linux, bajo demanda) mas la IP publica ($0.005/h). Con el servidor apagado solo se cobra el disco de 8 GB (menos de $1 al mes) hasta que se borra. Los limites de jugadores son conservadores: las tres instancias tienen 2 vCPU y el servidor de Minecraft usa sobre todo un nucleo, asi que lo que cambia entre planes es la memoria para cargar el mundo. El Learner Lab permite instancias hasta tamano `large`.
+
+## 11. Encender y apagar servidores (`server_control`)
+
+Codigo: [`lambdas/server_control/lambda_function.py`](lambdas/server_control/lambda_function.py)
+
+Ruta `POST /servers/control` con body `{"serverId": "i-...", "action": "start" | "stop" | "status"}` y el token en `Authorization: Bearer <token>`. El dueno del servidor sale del token, igual que en `create_server` y `delete_server`. La Lambda revisa en la tabla `servers` que el servidor sea del usuario, consulta su estado en EC2 y llama a `start_instances` o `stop_instances`.
+
+| Respuesta | Cuando |
+|---|---|
+| 200 | Encendiendo, apagando, o ya estaba en ese estado (no se vuelve a llamar a EC2) |
+| 400 | `action` o `serverId` invalidos |
+| 401 | Sin token, token invalido o vencido |
+| 404 | El servidor no existe o es de otro usuario |
+| 409 | El servidor esta cambiando de estado o ya no existe en EC2 |
+| 500 | Error interno |
+
+El respaldo del mundo (`backup`) queda desactivado: las EC2 no tienen rol de IAM ni AWS CLI para subir el mundo a S3. Sus funciones siguen en el codigo para cuando se agregue. Apagar no pierde el mundo: queda en el disco de la EC2.
+
+Publica metricas en CloudWatch con el mismo patron que `create_server` y `delete_server` (peticiones por resultado, servidores encendidos y apagados, fallos de EC2 por accion y codigo de error, fallos de RDS, latencia). `monitoring.sh` crea sus alarmas y el dashboard `minecraft-server-control`. Pruebas en `tests/test_server_control.py`.
+
