@@ -30,8 +30,7 @@ METRICS_NAMESPACE = os.environ.get("METRICS_NAMESPACE", "MinecraftPlatform")
 # secreto con el que login_user firma los tokens
 JWT_SECRET_ID = os.environ.get("JWT_SECRET_ID", "minecraft-jwt-secret")
 
-# el respaldo (backup) queda fuera por ahora: las EC2 no tienen rol de IAM ni AWS CLI para
-# subir el mundo a S3. Sus funciones se conservan abajo para cuando se agregue
+# backup desactivado, las ec2 no tienen permisos para subir a s3
 VALID_ACTIONS = {"start", "stop", "status"}
 INSTANCE_ID_RE = re.compile(r"^i-[0-9a-f]{8,17}$")
 WORLD_DIR = "/minecraft"
@@ -39,7 +38,7 @@ SSM_POLL_SECONDS = 5
 SSM_TIMEOUT_SECONDS = 150
 
 
-# instrumentacion de metricas (mismo patron que create_server y delete_server)
+# instrumentacion de metricas
 class Metrics:
     def __init__(self):
         self.data = []
@@ -159,7 +158,6 @@ def response(status, body):
     }
 
 
-# acepta el evento de aws lambda invoke o API Gateway (body JSON)
 def get_payload(event):
     if isinstance(event.get("body"), str):
         payload = json.loads(event["body"] or "{}")
@@ -235,7 +233,6 @@ def record_backup(cur, instance_id, s3_key):
     )
 
 
-# estado actual en EC2; si la instancia ya no existe se reporta como "terminated"
 def get_instance_state(instance_id):
     try:
         reservations = ec2_client.describe_instances(InstanceIds=[instance_id])[
@@ -291,13 +288,11 @@ def run_backup_on_instance(instance_id, s3_key):
     raise TimeoutError(f"El respaldo de {instance_id} no termino a tiempo")
 
 
-# llama a EC2 (start_instances o stop_instances) midiendo el tiempo y contando las fallas
 def call_ec2(metrics, action, method, instance_id):
     try:
         with metrics.timer("Ec2ControlLatency"):
             method(InstanceIds=[instance_id])
     except ClientError as err:
-        # ej. IncorrectInstanceState, InsufficientInstanceCapacity, UnauthorizedOperation
         metrics.count(
             "Ec2ControlFailures",
             Action=action,
@@ -322,7 +317,6 @@ def do_start(cur, instance_id, metrics):
     return HTTPStatus.OK, {"message": "Servidor encendiendose", "status": "starting"}
 
 
-# apaga sin respaldar: el mundo queda guardado en el disco de la EC2 al apagarse
 def do_stop(cur, instance_id, metrics):
     state = get_instance_state(instance_id)
     if state in ("stopped", "stopping"):

@@ -153,7 +153,6 @@ function iniciarDetalle() {
     modal.hidden = true;
     servidor = { ...servidor, status: "stopping" };
     pintar();
-    // el respaldo esta desactivado: server_control solo apaga la instancia
     await ejecutar("stop");
     cargar();
   });

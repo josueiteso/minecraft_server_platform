@@ -56,7 +56,7 @@ export function crearServidor(serverName, minecraftVersion, gameMode, maxPlayers
   return pedir("POST", "/servers", datos);
 }
 
-// POST /servers/control -> server_control (action: start, stop o status); el usuario va en el token
+// POST /servers/control -> server_control
 export function controlarServidor(serverId, action) {
   if (MODO_EJEMPLO) return ejemploControl(serverId, action);
   return pedir("POST", "/servers/control", { serverId, action });
