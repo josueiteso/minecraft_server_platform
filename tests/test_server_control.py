@@ -16,7 +16,6 @@ SERVER_ID = "i-0309ed93dd6aec9af"
 
 
 def evento_control(action, server_id=SERVER_ID, user_id="1"):
-    # POST /servers/control como lo manda API Gateway; el usuario va en el token
     return evento_api(
         {"serverId": server_id, "action": action}, token=firmar_token(user_id)
     )
@@ -35,7 +34,6 @@ def secreto(monkeypatch):
     monkeypatch.setattr(control, "get_jwt_secret", lambda: SECRETO_PRUEBA)
 
 
-# las metricas no salen a CloudWatch; se guardan en una lista para revisarlas
 @pytest.fixture(autouse=True)
 def cloudwatch(monkeypatch):
     cliente = MagicMock()
@@ -53,7 +51,7 @@ def metricas(cloudwatch):
 @pytest.fixture
 def conectar(monkeypatch, db_falsa):
     conn, cursor = db_falsa
-    cursor.fetchone.return_value = (1,)  # el servidor es del usuario
+    cursor.fetchone.return_value = (1,)
     monkeypatch.setattr(control, "connect_db", lambda: conn)
     return db_falsa
 
