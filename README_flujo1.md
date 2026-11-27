@@ -304,4 +304,3 @@ Ruta `POST /servers/control` con body `{"serverId": "i-...", "action": "start" |
 El respaldo del mundo (`backup`) queda desactivado: las EC2 no tienen rol de IAM ni AWS CLI para subir el mundo a S3. Sus funciones siguen en el codigo para cuando se agregue. Apagar no pierde el mundo: queda en el disco de la EC2.
 
 Publica metricas en CloudWatch con el mismo patron que `create_server` y `delete_server` (peticiones por resultado, servidores encendidos y apagados, fallos de EC2 por accion y codigo de error, fallos de RDS, latencia). `monitoring.sh` crea sus alarmas y el dashboard `minecraft-server-control`. Pruebas en `tests/test_server_control.py`.
-
