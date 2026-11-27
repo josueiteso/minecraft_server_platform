@@ -30,6 +30,8 @@ CREATE_AUTH_FAILURES_THRESHOLD="${CREATE_AUTH_FAILURES_THRESHOLD:-20}"
 DELETE_SPIKE_THRESHOLD="${DELETE_SPIKE_THRESHOLD:-10}"
 DELETE_NOT_FOUND_THRESHOLD="${DELETE_NOT_FOUND_THRESHOLD:-10}"
 DELETE_AUTH_FAILURES_THRESHOLD="${DELETE_AUTH_FAILURES_THRESHOLD:-20}"
+CONTROL_AUTH_FAILURES_THRESHOLD="${CONTROL_AUTH_FAILURES_THRESHOLD:-20}"
+CONTROL_CONFLICTS_THRESHOLD="${CONTROL_CONFLICTS_THRESHOLD:-10}"
 
 ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 
@@ -121,6 +123,40 @@ alarm "minecraft-lambda-errores" \
 alarm "minecraft-backups-fallidos" \
   "Un respaldo de mundo fallo en los ultimos 5 minutos" \
   "$NAMESPACE" BackupsFailed Sum 1 "$GTE"
+
+alarm "minecraft-lambda-control-throttles" \
+  "server_control esta siendo limitada por concurrencia" \
+  "AWS/Lambda" Throttles Sum 1 "$GTE" \
+  --dimensions Name=FunctionName,Value="$CONTROL_FUNCTION"
+
+alarm "minecraft-lambda-control-duration-p99" \
+  "El percentil 99% de duracion supera el 80% del timeout de server_control (${LAMBDA_TIMEOUT_MS} ms)" \
+  "AWS/Lambda" Duration p99 "$((LAMBDA_TIMEOUT_MS * 80 / 100))" "$GT" \
+  --dimensions Name=FunctionName,Value="$CONTROL_FUNCTION"
+
+alarm "minecraft-control-server-errors" \
+  "server_control devolvio al menos un HTTP 5xx en 5 minutos" \
+  "$NAMESPACE" ControlServerErrors Sum 1 "$GTE"
+
+alarm "minecraft-control-ec2-fails" \
+  "start_instances o stop_instances fallo (capacidad, cuota de vCPU o estado incorrecto). Ver Action y ErrorCode en el dashboard" \
+  "$NAMESPACE" Ec2ControlFailures Sum 1 "$GTE"
+
+alarm "minecraft-control-db-fails" \
+  "Fallo la conexion o la consulta a RDS al encender o apagar un servidor. Ver Stage en los logs" \
+  "$NAMESPACE" ControlDbFailures Sum 1 "$GTE"
+
+alarm "minecraft-control-latency-p95" \
+  "El percentil 95% de las operaciones de encender/apagar supera 10s (EC2, Secrets Manager o RDS lentos)" \
+  "$NAMESPACE" ControlLatency p95 10000 "$GT"
+
+alarm "minecraft-control-auth-fails" \
+  "Muchos 401 en server_control en 5 minutos (>= ${CONTROL_AUTH_FAILURES_THRESHOLD}). Posible abuso, tokens falsificados o un problema con JWT_SECRET" \
+  "$NAMESPACE" ControlAuthFailures Sum "$CONTROL_AUTH_FAILURES_THRESHOLD" "$GTE"
+
+alarm "minecraft-control-conflicts-spike" \
+  "Muchos 409 en server_control en 5 minutos (>= ${CONTROL_CONFLICTS_THRESHOLD}). Usuarios pulsando encender/apagar mientras el servidor cambia de estado, o un bug del frontend" \
+  "$NAMESPACE" ControlConflicts Sum "$CONTROL_CONFLICTS_THRESHOLD" "$GTE"
 
 END_CONTROL=${#ALARM_NAMES[@]}
 
@@ -302,27 +338,89 @@ cat > "$BODY_FILE" << JSON
 {
   "widgets": [
     {
-      "type": "alarm", "x": 0, "y": 0, "width": 24, "height": 3,
+      "type": "alarm", "x": 0, "y": 0, "width": 24, "height": 4,
       "properties": {
         "title": "Alarmas de server_control",
         "alarms": $CONTROL_ALARMS_JSON
       }
     },
     {
-      "type": "metric", "x": 0, "y": 3, "width": 12, "height": 6,
+      "type": "metric", "x": 0, "y": 4, "width": 12, "height": 6,
       "properties": {
-        "title": "Errores y duracion de server_control",
-        "region": "$REGION", "view": "timeSeries", "period": 300,
+        "title": "Peticiones de encender/apagar por resultado",
+        "region": "$REGION", "view": "timeSeries", "period": 300, "stat": "Sum",
         "metrics": [
-          ["AWS/Lambda", "Errors", "FunctionName", "$CONTROL_FUNCTION", {"stat": "Sum", "label": "Errores"}],
-          ["AWS/Lambda", "Duration", "FunctionName", "$CONTROL_FUNCTION", {"stat": "Average", "label": "Duracion promedio (ms)", "yAxis": "right"}]
+          ["$NAMESPACE", "ControlRequests", {"label": "Total"}],
+          ["$NAMESPACE", "ControlSuccess", {"label": "Exitosas (200)"}],
+          ["$NAMESPACE", "ControlClientErrors", {"label": "Errores del cliente (4xx)"}],
+          ["$NAMESPACE", "ControlServerErrors", {"label": "Errores del servidor (5xx)", "color": "#d62728"}]
         ]
       }
     },
     {
-      "type": "metric", "x": 12, "y": 3, "width": 12, "height": 6,
+      "type": "metric", "x": 12, "y": 4, "width": 12, "height": 6,
       "properties": {
-        "title": "Respaldos de mundos",
+        "title": "Servidores encendidos y apagados",
+        "region": "$REGION", "view": "timeSeries", "stacked": true, "period": 3600, "stat": "Sum",
+        "metrics": [
+          ["$NAMESPACE", "ServersStarted", {"label": "Encendidos"}],
+          ["$NAMESPACE", "ServersStopped", {"label": "Apagados"}]
+        ]
+      }
+    },
+    {
+      "type": "metric", "x": 0, "y": 10, "width": 12, "height": 6,
+      "properties": {
+        "title": "Fallos de server_control por etapa",
+        "region": "$REGION", "view": "timeSeries", "period": 300, "stat": "Sum",
+        "metrics": [
+          ["$NAMESPACE", "ControlAuthFailures", {"label": "Auth (401)"}],
+          ["$NAMESPACE", "ControlValidationFailures", {"label": "Validacion (400)"}],
+          ["$NAMESPACE", "ControlNotFound", {"label": "No encontrado (404)"}],
+          ["$NAMESPACE", "ControlConflicts", {"label": "Estado incorrecto (409)"}],
+          ["$NAMESPACE", "Ec2ControlFailures", {"label": "start/stop de EC2"}],
+          ["$NAMESPACE", "ControlDbFailures", {"label": "RDS", "color": "#d62728"}]
+        ]
+      }
+    },
+    {
+      "type": "metric", "x": 12, "y": 10, "width": 12, "height": 6,
+      "properties": {
+        "title": "Latencia de encender/apagar (ms)",
+        "region": "$REGION", "view": "timeSeries", "period": 300,
+        "metrics": [
+          ["$NAMESPACE", "ControlLatency", {"stat": "p50", "label": "Total p50"}],
+          ["$NAMESPACE", "ControlLatency", {"stat": "p95", "label": "Total p95"}],
+          ["$NAMESPACE", "Ec2ControlLatency", {"stat": "Average", "label": "start/stop EC2 (prom)"}],
+          ["$NAMESPACE", "ControlDbConnectLatency", {"stat": "Average", "label": "Conexion BD (prom)"}]
+        ]
+      }
+    },
+    {
+      "type": "metric", "x": 0, "y": 16, "width": 12, "height": 6,
+      "properties": {
+        "title": "Fallos de EC2 por accion y codigo de error",
+        "region": "$REGION", "view": "timeSeries", "period": 300, "stat": "Sum",
+        "metrics": [[{"expression": "SEARCH('{$NAMESPACE,Action,ErrorCode} MetricName=\"Ec2ControlFailures\"', 'Sum', 300)", "id": "ctlerr"}]]
+      }
+    },
+    {
+      "type": "metric", "x": 12, "y": 16, "width": 12, "height": 6,
+      "properties": {
+        "title": "Lambda server_control (plataforma)",
+        "region": "$REGION", "view": "timeSeries", "period": 300,
+        "metrics": [
+          ["AWS/Lambda", "Errors", "FunctionName", "$CONTROL_FUNCTION", {"stat": "Sum", "label": "Errores"}],
+          ["AWS/Lambda", "Throttles", "FunctionName", "$CONTROL_FUNCTION", {"stat": "Sum", "label": "Throttles"}],
+          ["AWS/Lambda", "ConcurrentExecutions", "FunctionName", "$CONTROL_FUNCTION", {"stat": "Maximum", "label": "Concurrencia max"}],
+          ["AWS/Lambda", "Duration", "FunctionName", "$CONTROL_FUNCTION", {"stat": "p99", "label": "Duracion p99 (ms)", "yAxis": "right"}]
+        ]
+      }
+    },
+    {
+      "type": "metric", "x": 0, "y": 22, "width": 12, "height": 6,
+      "properties": {
+        "title": "Respaldos de mundos (desactivados por ahora)",
         "region": "$REGION", "view": "timeSeries", "period": 300,
         "metrics": [
           ["$NAMESPACE", "BackupsCompleted", {"stat": "Sum", "label": "Completados"}],

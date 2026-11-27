@@ -126,7 +126,7 @@ function iniciarDetalle() {
   // llama a server_control y muestra el error si algo falla
   const ejecutar = async (accion) => {
     try {
-      const { status, datos } = await controlarServidor(sesion.userId, serverId, accion);
+      const { status, datos } = await controlarServidor(serverId, accion);
       if (status === 200) return datos;
       if (status === 409) toastError("El servidor está ocupado. Espera a que termine e intenta de nuevo.");
       else if (status === 404) toastError("No encontramos este servidor en tu cuenta.");
@@ -153,8 +153,8 @@ function iniciarDetalle() {
     modal.hidden = true;
     servidor = { ...servidor, status: "stopping" };
     pintar();
-    // server_control respalda el mundo antes de apagar
-    if (await ejecutar("stop")) anotarRespaldo();
+    // el respaldo esta desactivado: server_control solo apaga la instancia
+    await ejecutar("stop");
     cargar();
   });
 

@@ -46,7 +46,8 @@
           <button class="detail-action stop" id="apagar" disabled>
             <span aria-hidden="true">■</span> Apagar
           </button>
-          <button class="detail-action backup" id="respaldar" disabled>
+          <!-- respaldar desactivado: server_control todavia no puede subir el mundo a S3 -->
+          <button class="detail-action backup" id="respaldar" disabled hidden>
             <span aria-hidden="true">◆</span> Respaldar
           </button>
         </div>
@@ -79,7 +80,7 @@
             <span class="detail-info-icon date" aria-hidden="true"><i></i></span>
             <div><p>Fecha de creación</p><strong id="info-fecha">—</strong></div>
           </article>
-          <article class="detail-info-card">
+          <article class="detail-info-card" hidden>
             <span class="detail-info-icon backup" aria-hidden="true"><i></i></span>
             <div><p>Último respaldo</p><strong id="info-respaldo">—</strong></div>
           </article>
@@ -100,7 +101,7 @@
         <section class="pixel-modal" role="dialog" aria-modal="true" aria-labelledby="titulo-modal">
           <span class="modal-warning-icon" aria-hidden="true">!</span>
           <h2 id="titulo-modal">¿Apagar el servidor?</h2>
-          <p>Guardaremos un respaldo del mundo antes de apagarlo. Los jugadores conectados serán desconectados.</p>
+          <p>Los jugadores conectados serán desconectados. El mundo queda guardado y vuelve igual al encenderlo.</p>
           <div>
             <button class="modal-cancel" id="cancelar-apagar">Cancelar</button>
             <button class="modal-confirm" id="confirmar-apagar">Sí, apagar</button>

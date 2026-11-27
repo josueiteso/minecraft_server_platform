@@ -232,9 +232,9 @@
   background-size: auto, 512px 384px;
 }
 
-/* precios: el contenido baja para librar los bloques de tierra de la transicion de arriba
-   y queda centrado en la parte gris (la piedra tambien se mete un poco en la seccion de abajo) */
-.stone-layer .section-content { padding-top: 205px; padding-bottom: 95px; }
+/* precios y planes: el contenido baja para librar los bloques de la capa de arriba (transicion)
+   y queda centrado en su fondo (cada capa tambien se mete un poco en la seccion de abajo) */
+.stone-layer .section-content, .ore-layer .section-content { padding-top: 205px; padding-bottom: 95px; }
 
 .cost-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
 
@@ -340,21 +340,17 @@
 
 .plan-card li b { color: #f1f3f2; white-space: nowrap; }
 
+/* el boton toma el color del mineral de su plan, igual que la franja y el borde */
 .plan-card button {
   width: 100%; min-height: 48px;
-  color: #171009; background: #cc8948;
-  border: 3px solid #090c0e; box-shadow: 4px 4px 0 #080a0c;
+  color: #12161a; background: var(--color-plan);
+  border: 3px solid #090c0e; box-shadow: inset 0 3px 0 rgba(255, 255, 255, .25), 4px 4px 0 #080a0c;
   font: 700 10px var(--fuente-pixel);
 }
 
-.plan-card button:hover:not(:disabled) { background: #e2a15d; }
+.plan-card button:hover:not(:disabled) { filter: brightness(1.12); }
 
 .plan-card button:disabled { cursor: not-allowed; color: #697278; background: #2b3338; }
-
-/* los planes que no son el recomendado llevan boton secundario */
-.plan-card:not(.featured) button { color: #e3e7e4; background: #3a434a; }
-
-.plan-card:not(.featured) button:hover { background: #4a545c; }
 
 
 .billing-note span { color: #d49351; margin-right: 8px; }

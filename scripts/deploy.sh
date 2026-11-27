@@ -59,6 +59,7 @@ route_for() {
     login_user) echo "POST /login" ;;
     list_servers) echo "GET /servers" ;;
     delete_server) echo "DELETE /servers" ;;
+    server_control) echo "POST /servers/control" ;;
     *) echo "" ;;
   esac
 }
